@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>货主管理后台 - 丰源物流</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter/Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-truck-fast logo-icon"></i>
+                <span class="brand-name">丰源货主管理</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" data-view="dashboard">
+                        <i class="fas fa-chart-line"></i> <span>仪表盘</span>
+                    </li>
+                    <li class="nav-section">业务管理</li>
+                    <li class="nav-item" data-view="business-process">
+                        <i class="fas fa-file-invoice"></i> <span>业务流程</span>
+                    </li>
+                    <li class="nav-item" data-view="order-status">
+                        <i class="fas fa-clock-rotate-left"></i> <span>运单管理</span>
+                    </li>
+                    <li class="nav-item" data-view="cargo-management">
+                        <i class="fas fa-box-open"></i> <span>货单管理</span>
+                    </li>
+                    <li class="nav-item" data-view="accounting">
+                        <i class="fas fa-calculator"></i> <span>核算运营</span>
+                    </li>
+
+                    <li class="nav-section">系统配置</li>
+                    <li class="nav-item" data-view="business-config">
+                        <i class="fas fa-gears"></i> <span>业务配置</span>
+                    </li>
+                    <li class="nav-item" data-view="receipt-management">
+                        <i class="fas fa-receipt"></i> <span>回单管理</span>
+                    </li>
+                    <li class="nav-item" data-view="base-data">
+                        <i class="fas fa-database"></i> <span>基础数据</span>
+                    </li>
+                    <li class="nav-item" data-view="reports">
+                        <i class="fas fa-chart-pie"></i> <span>报表统计</span>
+                    </li>
+
+                    <li class="nav-section">支持与账户</li>
+                    <li class="nav-item" data-view="after-sales">
+                        <i class="fas fa-headset"></i> <span>售后管理</span>
+                    </li>
+                    <li class="nav-item" data-view="messages">
+                        <i class="fas fa-bell"></i> <span>消息提醒</span>
+                    </li>
+                    <li class="nav-item" data-view="settings">
+                        <i class="fas fa-user-shield"></i> <span>账号安全</span>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=4f46e5&color=fff" alt="Avatar"
+                        class="avatar">
+                    <div class="user-details">
+                        <p class="user-name">货主管理员</p>
+                        <p class="user-role">总账户</p>
+                    </div>
+                </div>
+                <i class="fas fa-sign-out-alt logout-btn"></i>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="搜索运单、货源或消息...">
+                </div>
+                <div class="top-bar-actions">
+                    <button class="btn btn-primary" id="btn-quick-publish">
+                        <i class="fas fa-plus"></i> 发布货单
+                    </button>
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                </div>
+            </header>
+
+            <div id="view-container" class="view-content">
+                <!-- Views will be loaded here -->
+                <div class="loading-overlay">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals (Initially hidden) -->
+    <div id="modal-container" class="modal-overlay hidden"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
