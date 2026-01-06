@@ -837,3 +837,806 @@ body {
 .action-menu.hidden {
     display: none !important;
 }
+
+/* --- Login Screen Styles --- */
+
+.login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 48px;
+    z-index: 10;
+    animation: loginIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes loginIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.login-logo {
+    font-size: 3rem;
+    color: #818cf8;
+    margin-bottom: 24px;
+    display: inline-block;
+    filter: drop-shadow(0 0 15px rgba(129, 140, 248, 0.3));
+}
+
+.login-header h1 {
+    color: white;
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.login-header p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group label i {
+    font-size: 0.8rem;
+    color: #818cf8;
+}
+
+.form-group input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: white;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.form-group input:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #818cf8;
+    box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.15);
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 48px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 16px;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+    color: #818cf8;
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: -8px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.remember-me input {
+    cursor: pointer;
+}
+
+.forgot-link {
+    color: #818cf8;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+    color: #a5b4fc;
+    text-decoration: underline;
+}
+
+.btn-login {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px -3px rgba(79, 70, 229, 0.4);
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+}
+
+.btn-login:active {
+    transform: scale(0.98);
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: 32px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.login-footer a {
+    color: #818cf8;
+    text-decoration: none;
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Background Decoration */
+.bg-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.blob {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+    border-radius: 50%;
+    filter: blur(80px);
+}
+
+.blob-1 {
+    top: -100px;
+    right: -100px;
+    animation: blobMove1 20s infinite alternate;
+}
+
+.blob-2 {
+    bottom: -100px;
+    left: -100px;
+    animation: blobMove2 25s infinite alternate;
+}
+
+@keyframes blobMove1 {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(-100px, 100px) scale(1.1);
+    }
+}
+
+@keyframes blobMove2 {
+    from {
+        transform: translate(0, 0) scale(1.1);
+    }
+
+    to {
+        transform: translate(100px, -100px) scale(1);
+    }
+}
+
+/* Animations Tools */
+.fade-out {
+    animation: fadeOut 0.5s ease forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Action Dropdown (Hover) */
+.action-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.action-dropdown-trigger {
+    color: #4f46e5;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.action-dropdown-trigger:hover {
+    background: #eef2ff;
+}
+
+.action-dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    z-index: 50;
+    min-width: 100px;
+    padding: 6px 4px;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.action-dropdown:hover .action-dropdown-menu {
+    display: block;
+}
+
+.dropdown-item-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    color: #475569;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.dropdown-item-btn:hover {
+    background: #f1f5f9;
+    color: var(--primary-color);
+}
+
+/* =========================================
+   Ported Wallet & Recharge Styles from App
+   ========================================= */
+
+/* Wallet Balance Card */
+.wallet-card {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+    border-radius: 16px;
+    padding: 30px;
+    color: white;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
+}
+
+.wallet-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+
+.balance-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.balance-amount {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.balance-amount small {
+    font-size: 16px;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.wallet-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.wallet-btn {
+    padding: 10px 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wallet-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.wallet-btn.primary {
+    background: white;
+    color: #4f46e5;
+    border: none;
+}
+
+.wallet-btn.primary:hover {
+    background: #f8fafc;
+}
+
+/* Recharge Panel Overlay */
+.recharge-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: 90%;
+    max-width: 850px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    padding: 30px;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.recharge-panel.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.recharge-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1500;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    backdrop-filter: blur(2px);
+}
+
+.recharge-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.close-panel-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #94a3b8;
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.close-panel-btn:hover {
+    color: #475569;
+}
+
+/* Steps */
+.step-indicator {
+    display: flex;
+    margin-bottom: 40px;
+    justify-content: space-between;
+    position: relative;
+    padding: 0 40px;
+}
+
+.step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 60px;
+    right: 60px;
+    height: 2px;
+    background-color: #e1e5eb;
+    z-index: 1;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    background: white;
+    padding: 0 10px;
+}
+
+.step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e1e5eb;
+    color: #7f8c8d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    transition: all 0.3s;
+}
+
+.step.active .step-circle {
+    background-color: #4f46e5;
+    color: white;
+}
+
+.step.completed .step-circle {
+    background-color: #10b981;
+    color: white;
+}
+
+.step-text {
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.step.active .step-text {
+    color: #4f46e5;
+    font-weight: 500;
+}
+
+/* Amount Selection */
+.amount-selection {
+    margin-bottom: 40px;
+}
+
+.amount-selection h3 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    color: #2c3e50;
+}
+
+.amount-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.amount-option {
+    border: 2px solid #e1e5eb;
+    border-radius: 10px;
+    padding: 20px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.amount-option:hover {
+    border-color: #4f46e5;
+    background-color: #eef2ff;
+}
+
+.amount-option.selected {
+    border-color: #4f46e5;
+    background-color: #eef2ff;
+}
+
+.amount-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
+
+.amount-note {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.custom-amount {
+    margin-top: 25px;
+}
+
+.custom-amount h4 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #1e293b;
+}
+
+.custom-amount input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 15px;
+    border: 2px solid #e1e5eb;
+    border-radius: 10px;
+    font-size: 18px;
+    text-align: center;
+    transition: border 0.3s;
+}
+
+.custom-amount input:focus {
+    outline: none;
+    border-color: #4f46e5;
+}
+
+/* Payment Methods */
+.payment-methods {
+    margin-bottom: 40px;
+}
+
+.payment-methods h3 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    color: #1e293b;
+}
+
+.payment-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.payment-option {
+    border: 2px solid #e1e5eb;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.payment-option:hover {
+    border-color: #4f46e5;
+    background-color: #eef2ff;
+}
+
+.payment-option.selected {
+    border-color: #4f46e5;
+    background-color: #eef2ff;
+}
+
+.payment-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.payment-icon.alipay {
+    background-color: #009fe8;
+}
+
+.payment-icon.wechat {
+    background-color: #07c160;
+}
+
+.payment-icon.bank {
+    background-color: #ff6b35;
+}
+
+.payment-icon.other {
+    background-color: #9b59b6;
+}
+
+.payment-info h4 {
+    margin: 0 0 5px 0;
+    color: #1e293b;
+}
+
+.payment-info p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    gap: 16px;
+}
+
+/* Modals for Payment and Success */
+.modal-custom {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content-custom {
+    background-color: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header-custom h3 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 24px;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #7f8c8d;
+}
+
+.payment-qr {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.payment-qr img {
+    max-width: 200px;
+    margin-bottom: 15px;
+}
+
+.success-message {
+    text-align: center;
+    padding: 30px 0;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background-color: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 40px;
+    color: white;
+}
+
+.section-hidden {
+    display: none !important;
+}

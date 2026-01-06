@@ -25,7 +25,95 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
+const checkLoginStatus = () => {
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    const loginContainer = document.getElementById('login-container');
+    const appContainer = document.querySelector('.app-container');
+
+    if (isLoggedIn) {
+        if (loginContainer) loginContainer.classList.add('hidden');
+        if (appContainer) appContainer.classList.remove('hidden');
+        return true;
+    } else {
+        if (loginContainer) loginContainer.classList.remove('hidden');
+        if (appContainer) appContainer.classList.add('hidden');
+        return false;
+    }
+};
+
+const handleLogin = (e) => {
+    e.preventDefault();
+    const loginBtn = document.getElementById('login-btn');
+    const originalContent = loginBtn.innerHTML;
+
+    // Simulate loading
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>正在验证...</span>';
+
+    setTimeout(() => {
+        sessionStorage.setItem('isLoggedIn', 'true');
+        const loginContainer = document.getElementById('login-container');
+        const appContainer = document.querySelector('.app-container');
+
+        loginContainer.classList.add('fade-out');
+        setTimeout(() => {
+            loginContainer.classList.add('hidden');
+            loginContainer.classList.remove('fade-out');
+            appContainer.classList.remove('hidden');
+            appContainer.classList.add('fade-in');
+
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = originalContent;
+
+            // Show dashboard
+            window.switchView('dashboard');
+
+            // Show welcome toast
+            window.showToast?.('欢迎回来，管理员！', 'success');
+        }, 500);
+    }, 1200);
+};
+
+window.handleLogout = () => {
+    sessionStorage.removeItem('isLoggedIn');
+    const loginContainer = document.getElementById('login-container');
+    const appContainer = document.querySelector('.app-container');
+
+    appContainer.classList.add('fade-out');
+    setTimeout(() => {
+        appContainer.classList.add('hidden');
+        appContainer.classList.remove('fade-out');
+        loginContainer.classList.remove('hidden');
+        loginContainer.classList.add('fade-in');
+
+        // Reset form
+        document.getElementById('login-form')?.reset();
+    }, 500);
+};
+
 const initApp = () => {
+    // Always init login form listeners (so they work after logout)
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.removeEventListener('submit', handleLogin); // Prevent duplicates
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    if (togglePassword && passwordInput) {
+        // Clone to remove old listeners if any, or just ensure single binding
+        const newToggle = togglePassword.cloneNode(true);
+        togglePassword.parentNode.replaceChild(newToggle, togglePassword);
+
+        newToggle.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            newToggle.classList.toggle('fa-eye');
+            newToggle.classList.toggle('fa-eye-slash');
+        });
+    }
+
     const navItems = document.querySelectorAll('.nav-item');
     const viewContainer = document.getElementById('view-container');
 
@@ -68,8 +156,10 @@ const initApp = () => {
         });
     });
 
-    // Default View
-    switchView('dashboard');
+    // Default View (only if logged in)
+    if (checkLoginStatus()) {
+        switchView('dashboard');
+    }
 
     // Initialize Global Data
     if (!window.cargoData) {
@@ -148,8 +238,8 @@ const initApp = () => {
 // Initialize Cargo Data 2 (Mock Data for all states)
 if (!window.cargoData2) {
     window.cargoData2 = [
-        { id: 'CG2512298376', start: '深圳', end: '北京', customer: '腾讯科技\n服务器设备', quantity: '500 台', time: '2025-12-30', status: '未接单', statusText: '未接单', actions: ['查看'] },
-        { id: 'CG2512298377', start: '东莞', end: '上海', customer: '华为终端\n手机配件', quantity: '2000 件', time: '2025-12-31\n张三 (顺丰车队)', status: '已接单', statusText: '已接单', actions: ['查看'] },
+        { id: 'CG2512298376', start: '深圳', end: '北京', customer: '腾讯科技\n服务器设备', quantity: '500 台', time: '2025-12-30', status: '未接单', statusText: '未接单', actions: ['查看', '取消'] },
+        { id: 'CG2512298377', start: '东莞', end: '上海', customer: '华为终端\n手机配件', quantity: '2000 件', time: '2025-12-31\n张三 (顺丰车队)', status: '已接单', statusText: '已接单', actions: ['查看', '取消'] },
         { id: 'CG2512298378', start: '西安', end: '深圳', customer: '比亚迪汽车\n汽车零部件', quantity: '15 吨', time: '2026-01-02\n李四 (顺丰车队)', status: '待评价', statusText: '待评价', actions: ['查看', '评价司机'] },
         { id: 'CG2512298379', start: '深圳', end: '成都', customer: '大疆创新\n无人机组件', quantity: '300 箱', time: '2026-01-05', status: '未接单', statusText: '未接单', actions: ['详情', '取消'] },
         {
@@ -176,7 +266,7 @@ if (!window.cargoData2) {
             time: '2026-01-04',
             status: '已签收',
             statusText: '已签收',
-            actions: ['查看', '查看轨迹', '查看回单'],
+            actions: ['查看', '查看轨迹'],
             waybills: [
                 { id: 'YD2512298402-1', status: '已签收', statusText: '已签收', driver: '孙六', fleet: '德邦快递', plate: '鄂A·11223', quantity: '400 台', time: '2026-01-04 09:00' },
                 { id: 'YD2512298402-2', status: '已签收', statusText: '已签收', driver: '李九', fleet: '德邦快递', plate: '鄂A·33445', quantity: '400 台', time: '2026-01-04 09:30' }
@@ -215,7 +305,24 @@ if (!window.afterSalesData) {
     ];
 }
 
-const switchView = async (viewId) => {
+// Initialize Wallet Data
+if (!window.walletData) {
+    window.walletData = {
+        balance: 12580.00,
+        transactions: [
+            { id: 1, type: 'recharge', title: '账户充值', time: '2025-01-05 14:30', amount: 5000.00, status: 'success' },
+            { id: 2, type: 'withdraw', title: '余额提现', time: '2025-01-03 09:15', amount: -2000.00, status: 'success' },
+            { id: 3, type: 'expend', title: '运费支付 - #ORD-8821', time: '2025-01-02 18:20', amount: -1200.00, status: 'success' },
+            { id: 4, type: 'recharge', title: '账户充值', time: '2025-01-01 10:00', amount: 10000.00, status: 'success' }
+        ],
+        bankCards: [
+            { id: 1, bankName: '招商银行', cardNumber: '8888', cardType: '储蓄卡' },
+            { id: 2, bankName: '中国工商银行', cardNumber: '6666', cardType: '储蓄卡' }
+        ]
+    };
+}
+
+window.switchView = async (viewId) => {
     const container = document.getElementById('view-container');
     window.currentView = viewId;
 
@@ -232,10 +339,8 @@ const switchView = async (viewId) => {
                 renderOrderStatus(container);
                 break;
             case 'cargo-management':
-                renderCargoManagement(container);
-                break;
             case 'cargo-management-2':
-                renderCargoManagement2(container);
+                window.renderCargoManagement2(container);
                 break;
             case 'base-data':
                 renderBaseData(container);
@@ -258,9 +363,7 @@ const switchView = async (viewId) => {
             case 'receipt-management':
                 renderReceiptManagement(container);
                 break;
-            case 'wallet-recharge':
-                renderWalletRecharge(container);
-                break;
+
             case 'after-sales':
                 renderAfterSales(container);
                 break;
@@ -269,6 +372,9 @@ const switchView = async (viewId) => {
                 break;
             case 'messages':
                 renderMessages(container);
+                break;
+            case 'consignor-recharge':
+                renderConsignorRecharge(container);
                 break;
             default:
                 renderPlaceholder(container, viewId);
@@ -493,12 +599,12 @@ const renderOrderStatus = (container) => {
         window.waybillData = [
             { id: '#ORD-9021', route: '广州天河区 → 上海浦东新区', driver: '王师傅 (9.6米厢式)', status: 'transit', statusText: '运输中', detail: '距终点145km', eta: '今日 18:00', actions: ['track'], plate: '粤B·90211', quantity: '1200件' },
             { id: '#ORD-9018', route: '中山火炬 → 常州武进', driver: '李师傅 (13米平板)', status: 'transit', statusText: '运输中', detail: '已进入江浙', eta: '明天 09:30', actions: ['track'], plate: '粤B·90188', quantity: '800件' },
-            { id: '#ORD-9022', route: '深圳南山 → 北京朝阳', driver: '未接单', status: 'pending', statusText: '未接单', detail: '等待司机接单', eta: '-', actions: ['modify', 'cancel', 'copy'], plate: '-', quantity: '-' },
-            { id: '#ORD-9023', route: '佛山南海 → 长沙雨花', driver: '张师傅 (4.2米)', status: 'accepted', statusText: '已接单', detail: '司机前往装货地', eta: '明日 10:00', actions: ['copy'], plate: '粤A·90233', quantity: '500件' },
+            { id: '#ORD-9022', route: '深圳南山 → 北京朝阳', driver: '未接单', status: 'pending', statusText: '未接单', detail: '等待司机接单', eta: '-', actions: ['cancel'], plate: '-', quantity: '-' },
+            { id: '#ORD-9023', route: '佛山南海 → 长沙雨花', driver: '张师傅 (4.2米)', status: 'accepted', statusText: '已接单', detail: '司机前往装货地', eta: '明日 10:00', actions: [], plate: '粤A·90233', quantity: '500件' },
             { id: '#ORD-9015', route: '东莞松山湖 → 武汉江夏', driver: '陈师傅 (6.8米)', status: 'signed', statusText: '已签收', detail: '电子回单待上传', eta: '已送达', actions: ['track', 'rate'], plate: '粤S·90155', quantity: '300箱' },
             { id: '#ORD-9012', route: '珠海高新 → 杭州西湖', driver: '刘师傅 (9.6米)', status: 'returned', statusText: '已回单', detail: '回单审核中', eta: '已送达', actions: ['view_receipt'], plate: '粤C·90122', quantity: '15吨' },
             { id: '#ORD-9008', route: '惠州仲恺 → 南京江宁', driver: '赵师傅 (13米)', status: 'settled', statusText: '已结算', detail: '运费已支付', eta: '已送达', actions: ['view_settlement'], plate: '粤L·90088', quantity: '1200件' },
-            { id: '#ORD-9005', route: '江门蓬江 → 成都双流', driver: '-', status: 'cancelled', statusText: '已取消', detail: '货主主动取消', eta: '-', actions: ['copy'], plate: '-', quantity: '-' },
+            { id: '#ORD-9005', route: '江门蓬江 → 成都双流', driver: '-', status: 'cancelled', statusText: '已取消', detail: '货主主动取消', eta: '-', actions: [], plate: '-', quantity: '-' },
         ];
     }
     const mockOrders = window.waybillData;
@@ -509,7 +615,7 @@ const renderOrderStatus = (container) => {
                 <h1>运单管理</h1>
                 <p>全流程管理运单状态，支持新建、跟踪及异常处理。</p>
             </div>
-            <button class="btn btn-primary" id="btn-create-order"><i class="fas fa-plus"></i> 新建运单</button>
+
         </div>
         
         <div class="card">
@@ -596,13 +702,12 @@ const renderTableRows = (orders) => {
         // Generate Action Buttons
         let actionButtons = '';
         order.actions.forEach(action => {
-            if (action === 'track') actionButtons += `<button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem; margin-right: 4px;" onclick="window.viewOrderTrack('${order.id}')">查看轨迹</button>`;
-            if (action === 'modify') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; border:1px solid #ddd; margin-right: 4px;">修改</button>`;
-            if (action === 'cancel') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; color: var(--danger-color); border:1px solid #fee2e2; margin-right: 4px;">取消</button>`;
-            if (action === 'copy') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; border:1px solid #ddd; margin-right: 4px;">复制</button>`;
-            if (action === 'rate') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; border:1px solid var(--warning-color); color: var(--warning-color); margin-right: 4px;">评价</button>`;
-            if (action === 'view_receipt') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; color: var(--primary-color); border:1px solid #e0f2fe; margin-right: 4px;">查看回单</button>`;
-            if (action === 'view_settlement') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; border:1px solid #ddd; margin-right: 4px;">查看支付</button>`;
+            if (action === 'track') actionButtons += `<button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="window.viewOrderTrack('${order.id}')">查看轨迹</button>`;
+            if (action === 'modify') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; border:1px solid #ddd;">修改</button>`;
+            if (action === 'cancel') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; color: var(--danger-color); border:1px solid #fee2e2;" onclick="window.cancelWaybill('${order.id}')">取消</button>`;
+            if (action === 'rate') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; border:1px solid var(--warning-color); color: var(--warning-color);">评价</button>`;
+            if (action === 'view_receipt') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; color: var(--primary-color); border:1px solid #e0f2fe;">查看回单</button>`;
+            if (action === 'view_settlement') actionButtons += `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; border:1px solid #ddd;">查看支付</button>`;
         });
 
         // Special styling for Cancelled
@@ -620,17 +725,35 @@ const renderTableRows = (orders) => {
                 <td><span class="status-chip ${statusClass}" style="white-space: nowrap; ${statusStyle}">${order.statusText}</span></td>
                 <td>${order.eta}<br><span style="font-size:0.75rem">${detailText}</span></td>
                 <td onclick="event.stopPropagation()">
-                     <button class="btn-text" style="color: #4f46e5; font-weight: 600; margin-right: 8px;" onclick="window.navigateTo('waybillDetail', {id: '${order.id}', from: 'waybillList'})">详情</button>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                     <button class="btn-text" style="color: #4f46e5; font-weight: 600;" onclick="window.navigateTo('waybillDetail', {id: '${order.id}', from: 'waybillList'})">详情</button>
                     ${actionButtons}
+                    </div>
                 </td>
             </tr>
         `;
     }).join('');
 };
 
-const renderCargoManagement = (container) => {
-    // Use Global Data
-    const displayData = window.cargoData;
+window.cancelWaybill = (id) => {
+    if (confirm('是否确认取消该运单？取消后将无法恢复。')) {
+        const order = window.waybillData.find(o => o.id === id);
+        if (order) {
+            order.status = 'cancelled';
+            order.statusText = '已取消';
+            order.actions = [];
+            order.detail = '货主主动取消';
+            // Refresh view
+            const container = document.getElementById('view-container');
+            renderOrderStatus(container);
+            showToast('运单已取消');
+        }
+    }
+};
+
+window.renderCargoManagement2 = (container) => {
+    // Use Global Data (Growth Version)
+    const displayData = window.cargoData2;
 
     container.innerHTML = `
         <div class="page-header">
@@ -647,7 +770,6 @@ const renderCargoManagement = (container) => {
                 <div class="filter-tab" data-filter="dispatched">待装货</div>
                 <div class="filter-tab" data-filter="loading">运输中</div>
                 <div class="filter-tab" data-filter="received">待回单</div>
-                <div class="filter-tab" data-filter="returned">待评价</div>
                 <div class="filter-tab" data-filter="reviewed">已完成</div>
             </div>
             <table class="data-table">
@@ -683,7 +805,8 @@ const renderCargoManagement = (container) => {
 
             // Data Filter
             const filter = e.target.getAttribute('data-filter');
-            const filteredData = filter === 'all' ? window.cargoData : window.cargoData.filter(item => item.status === filter);
+            // Use cargoData2 for filtering
+            const filteredData = filter === 'all' ? window.cargoData2 : window.cargoData2.filter(item => item.status === filter);
             document.getElementById('cargo-table-body').innerHTML = renderCargoRows(filteredData);
         });
     });
@@ -774,6 +897,7 @@ window.openPublishCargoModal = (mode = 'new', id = null) => {
     const modalContainer = document.getElementById('modal-container');
     const isView = mode === 'view';
     const isEdit = mode === 'edit';
+    const isReorder = mode === 'reorder';
 
     // Extract info from item if present
     const clientName = item ? (item.customer ? item.customer.split('\n')[0] : (item.client || '')) : '';
@@ -788,7 +912,7 @@ window.openPublishCargoModal = (mode = 'new', id = null) => {
     modalContainer.innerHTML = `
         <div class="modal-content" style="width: 800px; max-width: 95vw; background: #fff; border-radius: 16px; display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
             <div style="padding: 24px 24px 16px; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9;">
-                <h2 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">${isView ? '查看货单' : (isEdit ? '修改货单' : '发布货单')}</h2>
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">${isView ? '查看货单' : (isEdit ? '修改货单' : (isReorder ? '发布货单 (再来一单)' : '发布货单'))}</h2>
                 <div style="display: flex; gap: 12px;">
                      <button class="btn" onclick="document.getElementById('modal-container').classList.add('hidden')" style="background: #f1f5f9; color: #64748b;">${isView ? '关闭' : '取消'}</button>
                      ${!isView ? `
@@ -803,7 +927,7 @@ window.openPublishCargoModal = (mode = 'new', id = null) => {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="form-group" style="grid-column: span 1;">
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 8px;">运输单号</label>
-                    <input type="text" value="${item ? item.id : '251229837685096'}" readonly style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; color: #94a3b8;">
+                    <input type="text" value="${(isReorder || !item) ? 'CG' + Date.now().toString().slice(-10) : item.id}" readonly style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; color: #94a3b8;">
                 </div>
                 <div class="form-group" style="grid-column: span 1;">
                     <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #64748b; margin-bottom: 8px;"><span style="color:red">*</span>客户名称</label>
@@ -1596,7 +1720,7 @@ window.openAddressModal = (id, type) => {
     };
 
     const modalHtml = `
-        < div class="modal-overlay" id = "address-modal" >
+        <div class="modal-overlay" id="address-modal">
             <div class="card" style="width: 600px; max-width: 95vw; padding: 0; overflow: hidden; border-radius: 20px;">
                 <div class="card-header" style="padding: 24px; background: #fff; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">${isEdit ? '编辑' : '新增'}${type === 'shipper' ? '发货' : '收货'}地址</h3>
@@ -1644,7 +1768,7 @@ window.openAddressModal = (id, type) => {
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
         `;
 
     document.body.insertAdjacentHTML('beforeend', modalHtml);
@@ -1859,7 +1983,7 @@ window.openGoodsModal = (id) => {
     };
 
     const modalHtml = `
-        < div class="modal-overlay" id = "goods-modal" >
+        <div class="modal-overlay" id="goods-modal">
             <div class="card" style="width: 550px; border-radius: 20px; overflow: hidden; padding: 0;">
                 <div class="card-header" style="padding: 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="margin: 0; font-weight: 700;">${isEdit ? '编辑' : '新增'}货物信息</h3>
@@ -2130,7 +2254,7 @@ window.previewContract = (id) => {
 window.renderCargoManagement2 = (container) => {
     const statuses = [
         '全部', '草稿', '未接单', '已接单', '运输中', '已签收',
-        '已电子回单', '已纸质回单', '已结算', '待评价', '已完成',
+        '已电子回单', '已纸质回单', '已结算', '已完成',
         '已取消', '回收站', '异常运单'
     ];
 
@@ -2234,7 +2358,7 @@ window.renderCargoManagement2 = (container) => {
                                 <th style="padding: 16px; text-align: left;">约定时间/详情</th>
                                 <th style="padding: 16px; text-align: left;">关联运单</th>
                                 <th style="padding: 16px; text-align: left; min-width: 100px;">当前状态</th>
-                                <th style="padding: 16px; text-align: right; min-width: 150px;">
+                                <th style="padding: 16px; text-align: left; min-width: 150px;">
                                     <div class="action-column-header">
                                         操作 <i class="fas fa-cog" style="color:#4f46e5; cursor:pointer;" onclick="showToast('设置功能开发中')"></i>
                                     </div>
@@ -2276,8 +2400,8 @@ window.renderCargoManagement2 = (container) => {
                                     </span>
                                 </div>
                             </td>
-                            <td style="padding: 20px 16px; text-align: right; overflow: visible;" onclick="event.stopPropagation()">
-                                <div class="action-cell" style="justify-content: flex-end; min-width: 140px;">
+                            <td style="padding: 20px 16px; text-align: left; overflow: visible;" onclick="event.stopPropagation()">
+                                <div class="action-cell" style="justify-content: flex-start; min-width: 140px;">
                                     ${window.renderActionMenu(item)}
                                 </div>
                             </td>
@@ -3126,11 +3250,17 @@ const renderReceiptManagement = (container) => {
                 </div>
 
                 <div class="card">
-                    <div class="filter-tab-container">
-                        <div class="filter-tab active" data-filter="all">全部</div>
-                        <div class="filter-tab" data-filter="pending-e">待电子审核</div>
-                        <div class="filter-tab" data-filter="pending-p">待纸质收回</div>
-                        <div class="filter-tab" data-filter="completed">已完结</div>
+                    <div class="filter-tab-container" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 20px;">
+                            <div class="filter-tab active" data-filter="all">全部</div>
+                            <div class="filter-tab" data-filter="pending-upload">待上传</div>
+                            <div class="filter-tab" data-filter="pending-e">待电子审核</div>
+                            <div class="filter-tab" data-filter="pending-p">待纸质收回</div>
+                            <div class="filter-tab" data-filter="completed">已完结</div>
+                        </div>
+                        <div class="search-box" style="margin-right: 20px;">
+                            <input type="text" id="receipt-search" placeholder="搜索客户名称" style="padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.9rem; width: 200px;">
+                        </div>
                     </div>
 
                     <table class="data-table">
@@ -3153,15 +3283,45 @@ const renderReceiptManagement = (container) => {
                 `;
 
     // Filter Logic
-    container.querySelectorAll('.filter-tab').forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            container.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
+    const filterTabs = container.querySelectorAll('.filter-tab');
+    const searchInput = container.querySelector('#receipt-search');
+    let currentFilter = 'all';
+    let currentSearch = '';
 
-            const filter = e.target.getAttribute('data-filter');
-            // Simplified mock filtering for demonstration
-            document.getElementById('receipt-table-body').innerHTML = renderReceiptRows(receiptData);
+    const applyFilters = () => {
+        let filtered = receiptData;
+
+        // Apply Tab Filter
+        if (currentFilter === 'pending-upload') {
+            filtered = filtered.filter(item => item.status === 'signed' || item.status === 'loading');
+        } else if (currentFilter === 'pending-e') {
+            filtered = filtered.filter(item => item.status === 'received');
+        } else if (currentFilter === 'pending-p') {
+            filtered = filtered.filter(item => item.status === 'returned');
+        } else if (currentFilter === 'completed') {
+            filtered = filtered.filter(item => item.status === 'reviewed' || item.status === 'settled');
+        }
+
+        // Apply Search Filter
+        if (currentSearch) {
+            filtered = filtered.filter(item => item.client.includes(currentSearch));
+        }
+
+        document.getElementById('receipt-table-body').innerHTML = renderReceiptRows(filtered);
+    };
+
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            filterTabs.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentFilter = e.target.getAttribute('data-filter');
+            applyFilters();
         });
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        currentSearch = e.target.value.trim();
+        applyFilters();
     });
 };
 
@@ -3170,8 +3330,9 @@ const renderReceiptRows = (data) => {
 
     return data.slice(0, 8).map(item => {
         const eStatus = ['reviewed', 'returned', 'received'].includes(item.status) ? '已上传' : '未上传';
-        const pStatus = item.status === 'reviewed' ? '已收回' : '寄送中';
-        const pBadge = pStatus === '已收回' ? 'status-active' : 'status-pending';
+        // Only show '寄送中' if electronic receipt is uploaded (i.e. process has started)
+        const pStatus = item.status === 'reviewed' ? '已收回' : (eStatus === '已上传' ? '寄送中' : '');
+        const pBadge = pStatus === '已收回' ? 'status-active' : (pStatus ? 'status-pending' : '');
 
         return `
                 <tr>
@@ -3197,7 +3358,6 @@ const renderReceiptRows = (data) => {
                     <td>
                         <div style="display:flex; gap:4px;">
                             <button class="btn" style="padding: 4px 10px; font-size: 0.8rem; border:1px solid #ddd;" onclick="window.openReceiptDetailModal('${item.id}')">详情</button>
-                            ${item.status === 'received' ? `<button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="window.approveReceipt('${item.id}')">审核</button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -3394,6 +3554,8 @@ window.openReceiptDetailModal = (id) => {
                         <!-- Modal Footer -->
                         <div style="padding: 16px 24px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 12px; background: #fff;">
                             <button class="btn" style="padding: 10px 24px; border: 1px solid #e2e8f0;" onclick="document.getElementById('modal-container').classList.add('hidden')">关闭窗口</button>
+                            ${cargo.status === 'received' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.approveReceipt('${cargo.id}')"><i class="fas fa-check-circle"></i> 审核</button>` : ''}
+                            ${cargo.status === 'returned' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认收回</button>` : ''}
                             <button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-print"></i> 打印回单</button>
                         </div>
                     </div>
@@ -3411,6 +3573,11 @@ window.approveReceipt = (id) => {
     if (cargo) {
         cargo.status = 'returned';
         cargo.statusText = '待评价';
+
+        // Close modal if open
+        const modalContainer = document.getElementById('modal-container');
+        if (modalContainer) modalContainer.classList.add('hidden');
+
         switchView('receipt-management');
         showToast('电子回单审核通过');
     }
@@ -3421,255 +3588,17 @@ window.confirmPaperReceipt = (id) => {
     if (cargo) {
         cargo.status = 'reviewed';
         cargo.statusText = '已完成';
+
+        // Close modal if open
+        const modalContainer = document.getElementById('modal-container');
+        if (modalContainer) modalContainer.classList.add('hidden');
+
         switchView('receipt-management');
         showToast('纸质回单已收回，订单已完结');
     }
 };
 
-// --- Wallet/Recharge Section ---
-const renderWalletRecharge = (container) => {
-    container.innerHTML = `
-        <style>
-            #recharge-app-root .recharge-container {
-                display: grid;
-                grid-template-columns: 1fr 1.5fr;
-                gap: 30px;
-                padding: 30px;
-                background: #f5f7fa;
-                height: calc(100vh - var(--header-height));
-                overflow-y: auto;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            }
-            #recharge-app-root .left-panel { display: flex; flex-direction: column; gap: 30px; }
-            #recharge-app-root .info-card, #recharge-app-root .recent-records { background-color: white; border-radius: 12px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); padding: 25px; }
-            #recharge-app-root .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
-            #recharge-app-root .card-header h3 { margin: 0; color: #2c3e50; font-size: 20px; }
-            #recharge-app-root .balance-display { text-align: center; padding: 25px 0; margin-bottom: 20px; }
-            #recharge-app-root .balance-amount { font-size: 48px; font-weight: bold; color: #27ae60; margin: 10px 0; }
-            #recharge-app-root .balance-label { color: #7f8c8d; font-size: 16px; }
-            #recharge-app-root .user-details { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-            #recharge-app-root .detail-item h4 { margin: 0 0 5px 0; color: #7f8c8d; font-size: 14px; }
-            #recharge-app-root .detail-item p { margin: 0; color: #2c3e50; font-weight: 500; font-size: 16px; }
-            #recharge-app-root .record-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f5f5f5; }
-            #recharge-app-root .record-item:last-child { border-bottom: none; }
-            #recharge-app-root .record-amount { font-weight: bold; color: #27ae60; }
-            #recharge-app-root .record-date { color: #7f8c8d; font-size: 14px; }
-            #recharge-app-root .recharge-panel { background-color: white; border-radius: 12px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); padding: 30px; }
-            #recharge-app-root .step-indicator { display: flex; margin-bottom: 40px; justify-content: space-between; position: relative; }
-            #recharge-app-root .step-indicator::before { content: ''; position: absolute; top: 15px; left: 30px; right: 30px; height: 2px; background-color: #e1e5eb; z-index: 1; }
-            #recharge-app-root .step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; background: white; padding: 0 10px; }
-            #recharge-app-root .step-circle { width: 32px; height: 32px; border-radius: 50%; background-color: #e1e5eb; color: #7f8c8d; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 8px; transition: all 0.3s; }
-            #recharge-app-root .step.active .step-circle { background-color: #4a9eff; color: white; }
-            #recharge-app-root .step.completed .step-circle { background-color: #27ae60; color: white; }
-            #recharge-app-root .step-text { font-size: 14px; color: #7f8c8d; }
-            #recharge-app-root .step.active .step-text { color: #4a9eff; font-weight: 500; }
-            #recharge-app-root .amount-selection { margin-bottom: 40px; }
-            #recharge-app-root .amount-selection h3 { margin: 0 0 20px 0; font-size: 18px; color: #2c3e50; }
-            #recharge-app-root .amount-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
-            #recharge-app-root .amount-option { border: 2px solid #e1e5eb; border-radius: 10px; padding: 20px 10px; text-align: center; cursor: pointer; transition: all 0.2s; }
-            #recharge-app-root .amount-option:hover { border-color: #4a9eff; background-color: #f8fbff; }
-            #recharge-app-root .amount-option.selected { border-color: #4a9eff; background-color: #f0f7ff; }
-            #recharge-app-root .amount-value { font-size: 24px; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
-            #recharge-app-root .amount-note { color: #7f8c8d; font-size: 14px; }
-            #recharge-app-root .custom-amount { margin-top: 25px; }
-            #recharge-app-root .custom-amount h4 { margin: 0 0 10px 0; font-size: 16px; color: #2c3e50; }
-            #recharge-app-root .custom-amount input { width: 100%; box-sizing: border-box; padding: 15px; border: 2px solid #e1e5eb; border-radius: 10px; font-size: 18px; text-align: center; transition: border 0.3s; }
-            #recharge-app-root .custom-amount input:focus { outline: none; border-color: #4a9eff; }
-            #recharge-app-root .payment-methods { margin-bottom: 40px; }
-            #recharge-app-root .payment-methods h3 { margin: 0 0 20px 0; font-size: 18px; color: #2c3e50; }
-            #recharge-app-root .payment-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
-            #recharge-app-root .payment-option { border: 2px solid #e1e5eb; border-radius: 10px; padding: 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: all 0.2s; }
-            #recharge-app-root .payment-option:hover { border-color: #4a9eff; background-color: #f8fbff; }
-            #recharge-app-root .payment-option.selected { border-color: #4a9eff; background-color: #f0f7ff; }
-            #recharge-app-root .payment-icon { width: 50px; height: 50px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; }
-            #recharge-app-root .payment-icon.alipay { background-color: #009fe8; }
-            #recharge-app-root .payment-icon.wechat { background-color: #07c160; }
-            #recharge-app-root .payment-icon.bank { background-color: #ff6b35; }
-            #recharge-app-root .payment-icon.other { background-color: #9b59b6; }
-            #recharge-app-root .payment-info h4 { margin: 0 0 5px 0; color: #2c3e50; }
-            #recharge-app-root .payment-info p { margin: 0; color: #7f8c8d; font-size: 14px; }
-            #recharge-app-root .action-buttons { display: flex; justify-content: space-between; margin-top: 40px; }
-            #recharge-app-root .recharge-btn { padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; transition: all 0.3s; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; }
-            #recharge-app-root .recharge-btn-secondary { background-color: #f8f9fa; color: #495057; border: 1px solid #e1e5eb; }
-            #recharge-app-root .recharge-btn-primary { background-color: #4a9eff; color: white; }
-            #recharge-app-root .recharge-btn-success { background-color: #27ae60; color: white; }
-            #recharge-app-root .recharge-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 3000; align-items: center; justify-content: center; }
-            #recharge-app-root .recharge-modal-content { background-color: white; border-radius: 12px; width: 90%; max-width: 500px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
-            #recharge-app-root .recharge-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-            #recharge-app-root .recharge-modal-header h3 { margin: 0; color: #2c3e50; font-size: 24px; }
-            #recharge-app-root .payment-qr { text-align: center; margin: 30px 0; }
-            #recharge-app-root .payment-qr img { max-width: 200px; margin-bottom: 15px; }
-            #recharge-app-root .success-message { text-align: center; padding: 30px 0; }
-            #recharge-app-root .success-icon { width: 80px; height: 80px; background-color: #27ae60; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px; color: white; }
-            @media (max-width: 1200px) { #recharge-app-root .recharge-container { grid-template-columns: 1fr; } }
-            @media (max-width: 768px) { #recharge-app-root .amount-options, #recharge-app-root .payment-options { grid-template-columns: repeat(2, 1fr); } #recharge-app-root .action-buttons { flex-direction: column; gap: 15px; } }
-        </style>
-        <div id="recharge-app-root" style="height: 100%; width: 100%">
-            <div class="recharge-container">
-                <div class="left-panel">
-                    <div class="info-card">
-                        <div class="card-header">
-                            <h3>账户信息</h3>
-                            <i data-lucide="user" style="color: #4a9eff; width: 24px; height: 24px;"></i>
-                        </div>
-                        <div class="balance-display">
-                            <div class="balance-label">当前余额</div>
-                            <div class="balance-amount">¥8,450.00</div>
-                            <div class="balance-label">人民币</div>
-                        </div>
-                        <div class="user-details">
-                            <div class="detail-item"><h4>用户ID</h4><p>ERP-2023-0582</p></div>
-                            <div class="detail-item"><h4>公司名称</h4><p>丰源物流集团</p></div>
-                            <div class="detail-item"><h4>账户等级</h4><p>VIP 2级</p></div>
-                            <div class="detail-item"><h4>最后充值</h4><p>2023-10-15</p></div>
-                        </div>
-                    </div>
-                    <div class="recent-records">
-                        <div class="card-header">
-                            <h3>最近流水记录</h3>
-                            <i data-lucide="history" style="color: #4a9eff; width: 20px; height: 20px;"></i>
-                        </div>
-                        <div class="records-list">
-                            <div class="record-item"><div><div class="record-amount" style="color: #ef4444;">-¥2,000.00</div><div class="record-date">整车运输</div></div><div class="record-date">2025-12-29</div></div>
-                            <div class="record-item"><div><div class="record-amount">¥2,000.00</div><div class="record-date">支付宝充值</div></div><div class="record-date">2023-10-15</div></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="recharge-panel">
-                    <div class="step-indicator">
-                        <div class="step active"><div class="step-circle">1</div><div class="step-text">选择金额</div></div>
-                        <div class="step"><div class="step-circle">2</div><div class="step-text">选择方式</div></div>
-                        <div class="step"><div class="step-circle">3</div><div class="step-text">确认支付</div></div>
-                    </div>
-                    <div class="amount-selection">
-                        <h3>选择充值金额</h3>
-                        <div class="amount-options">
-                            <div class="amount-option" data-amount="100"><div class="amount-value">¥100</div><div class="amount-note">普通用户</div></div>
-                            <div class="amount-option" data-amount="500"><div class="amount-value">¥500</div><div class="amount-note">赠送¥10</div></div>
-                            <div class="amount-option selected" data-amount="1000"><div class="amount-value">¥1,000</div><div class="amount-note">赠送¥30</div></div>
-                            <div class="amount-option" data-amount="2000"><div class="amount-value">¥2,000</div><div class="amount-note">赠送¥60</div></div>
-                            <div class="amount-option" data-amount="5000"><div class="amount-value">¥5,000</div><div class="amount-note">赠送¥150</div></div>
-                            <div class="amount-option" data-amount="10000"><div class="amount-value">¥10,000</div><div class="amount-note">赠送¥300</div></div>
-                        </div>
-                        <div class="custom-amount"><h4>自定义金额</h4><input type="number" id="customAmount" placeholder="请输入充值金额" min="100"></div>
-                    </div>
-                    <div class="payment-methods">
-                        <h3>选择支付方式</h3>
-                        <div class="payment-options">
-                            <div class="payment-option selected" data-method="alipay"><div class="payment-icon alipay"><i data-lucide="scan-line"></i></div><div class="payment-info"><h4>支付宝</h4><p>即时到账</p></div></div>
-                            <div class="payment-option" data-method="wechat"><div class="payment-icon wechat"><i data-lucide="message-circle"></i></div><div class="payment-info"><h4>微信支付</h4><p>安全快捷</p></div></div>
-                        </div>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="recharge-btn recharge-btn-secondary" id="cancelBtn"><i data-lucide="x"></i> 取消</button>
-                        <button class="recharge-btn recharge-btn-primary" id="nextBtn">下一步<i data-lucide="arrow-right"></i></button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="recharge-modal" id="paymentModal">
-                <div class="recharge-modal-content">
-                    <div class="recharge-modal-header"><h3>支付确认</h3><button class="close-modal-btn" id="closeModal">&times;</button></div>
-                    <div class="payment-qr"><img src="" alt="支付二维码"><p>扫描二维码支付</p><p>支付金额：<strong>¥0.00</strong></p></div>
-                    <div class="action-buttons"><button class="recharge-btn recharge-btn-secondary" id="cancelPayment">取消</button><button class="recharge-btn recharge-btn-primary" id="confirmPayment">已完成支付</button></div>
-                </div>
-            </div>
-            
-            <div class="recharge-modal" id="successModal">
-                <div class="recharge-modal-content">
-                    <div class="recharge-modal-header"><h3>充值成功</h3><button class="close-modal-btn" id="closeSuccessModal">&times;</button></div>
-                    <div class="success-message"><div class="success-icon"><i data-lucide="check"></i></div><h3>充值成功！</h3><p>金额：<strong>¥0.00</strong></p></div>
-                    <div class="action-buttons"><button class="recharge-btn recharge-btn-primary" id="backToRecharge">返回</button></div>
-                </div>
-            </div>
-        </div>
-    `;
 
-    // Logic implementation
-    const amountOptions = container.querySelectorAll('.amount-option');
-    const customAmountInput = container.querySelector('#customAmount');
-    const paymentOptions = container.querySelectorAll('.payment-option');
-    const nextBtn = container.querySelector('#nextBtn');
-    const cancelBtn = container.querySelector('#cancelBtn');
-    const paymentModal = container.querySelector('#paymentModal');
-    const successModal = container.querySelector('#successModal');
-    const closeModalBtn = container.querySelector('#closeModal');
-    const cancelPaymentBtn = container.querySelector('#cancelPayment');
-    const confirmPaymentBtn = container.querySelector('#confirmPayment');
-    const closeSuccessModalBtn = container.querySelector('#closeSuccessModal');
-    const backToRechargeBtn = container.querySelector('#backToRecharge');
-    const steps = container.querySelectorAll('.step');
-
-    let selectedAmount = 1000;
-    let selectedPaymentMethod = 'alipay';
-
-    const updateAmountSelection = (amount) => {
-        selectedAmount = amount;
-        amountOptions.forEach(opt => {
-            if (parseInt(opt.getAttribute('data-amount')) === amount) opt.classList.add('selected');
-            else opt.classList.remove('selected');
-        });
-    };
-
-    const updatePaymentSelection = (method) => {
-        selectedPaymentMethod = method;
-        paymentOptions.forEach(opt => {
-            if (opt.getAttribute('data-method') === method) opt.classList.add('selected');
-            else opt.classList.remove('selected');
-        });
-    };
-
-    amountOptions.forEach(opt => opt.addEventListener('click', () => {
-        updateAmountSelection(parseInt(opt.getAttribute('data-amount')));
-        if (customAmountInput) customAmountInput.value = '';
-    }));
-
-    if (customAmountInput) customAmountInput.addEventListener('input', (e) => {
-        const val = parseInt(e.target.value);
-        if (val >= 100) updateAmountSelection(val);
-    });
-
-    paymentOptions.forEach(opt => opt.addEventListener('click', () => {
-        updatePaymentSelection(opt.getAttribute('data-method'));
-    }));
-
-    let currentStep = 1;
-    nextBtn.addEventListener('click', () => {
-        if (currentStep === 1) {
-            steps[0].classList.remove('active'); steps[0].classList.add('completed');
-            steps[1].classList.add('active');
-            nextBtn.innerHTML = '确认支付 <i data-lucide="check" style="width: 16px; height: 16px;"></i>';
-            if (window.lucide) lucide.createIcons();
-            currentStep = 2;
-        } else if (currentStep === 2) {
-            paymentModal.style.display = 'flex';
-            const qrImg = paymentModal.querySelector('.payment-qr img');
-            const amountText = paymentModal.querySelector('.payment-qr p strong');
-            qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://pay.com/' + selectedPaymentMethod + '?amount=' + selectedAmount;
-            amountText.textContent = '¥' + selectedAmount.toFixed(2);
-        }
-    });
-
-    confirmPaymentBtn.addEventListener('click', () => {
-        paymentModal.style.display = 'none';
-        steps[1].classList.remove('active'); steps[1].classList.add('completed');
-        steps[2].classList.add('active');
-        setTimeout(() => {
-            successModal.style.display = 'flex';
-            successModal.querySelector('.success-message p strong').textContent = '¥' + selectedAmount.toFixed(2);
-        }, 500);
-    });
-
-    [closeModalBtn, cancelPaymentBtn].forEach(btn => btn.addEventListener('click', () => paymentModal.style.display = 'none'));
-    [closeSuccessModalBtn, backToRechargeBtn].forEach(btn => btn.addEventListener('click', () => {
-        successModal.style.display = 'none';
-        switchView('wallet-recharge');
-    }));
-
-    if (window.lucide) lucide.createIcons();
-};
-
-window.renderWalletRecharge = renderWalletRecharge;
 
 // Initialize Order Track Data
 window.orderTrackData = {
@@ -4274,6 +4203,12 @@ window.renderActionMenu = (item, primaryCount = 2) => {
         }
     });
 
+    // START CHANGE: If 3 or more actions, force primaryCount to 1 (Details + More)
+    if (actions.length >= 3) {
+        primaryCount = 1;
+    }
+    // END CHANGE
+
     const getHandler = (a) => {
         if (a === '详情') {
             if (item.id.startsWith('CON-')) return `window.navigateTo('contractDetail', {id: '${item.id}', from: 'contract-management'})`;
@@ -4289,6 +4224,7 @@ window.renderActionMenu = (item, primaryCount = 2) => {
             return `window.deleteCargo2('${item.id}')`;
         }
         if (a === '取消') return `window.cancelCargo2('${item.id}', ${item.statusText === '已接单'})`;
+        if (a === '再来一单') return `window.openPublishCargoModal('reorder', '${item.id}')`;
         return `showToast('${a}操作成功')`;
     };
 
@@ -4304,17 +4240,18 @@ window.renderActionMenu = (item, primaryCount = 2) => {
     let moreHtml = '';
     if (moreActions.length > 0) {
         const menuItems = moreActions.map(m => `
-            <button class="dropdown-item-btn" style="text-align: left; width: 100%; border-radius: 6px; margin: 2px 0;" onclick="event.stopPropagation(); window.toggleActionMenu('${item.id}'); ${getHandler(m)}">
+            <button class="dropdown-item-btn" onclick="event.stopPropagation(); ${getHandler(m)}">
                 ${m}
             </button>
         `).join('');
 
+        // Updated to use CSS Hover Dropdown
         moreHtml = `
-            <div style="position: relative; display: inline-block;">
-                <div class="more-dropdown-trigger" style="color: #4f46e5; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;" onclick="event.stopPropagation(); window.toggleActionMenu('${item.id}')">
+            <div class="action-dropdown" onclick="event.stopPropagation()">
+                <div class="action-dropdown-trigger">
                     更多 <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
                 </div>
-                <div id="action-menu-${item.id}" class="action-dropdown-menu action-menu hidden">
+                <div class="action-dropdown-menu">
                     <div style="display: flex; flex-direction: column;">
                         ${menuItems}
                     </div>
@@ -4324,9 +4261,383 @@ window.renderActionMenu = (item, primaryCount = 2) => {
     }
 
     return `
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
             ${primaryHtml}
             ${moreHtml}
         </div>
     `;
+};
+
+window.renderConsignorRecharge = (container) => {
+    // 1. Data Prep
+    const balance = window.walletData.balance.toFixed(2); // e.g. "12580.00"
+    const [whole, decimal] = balance.split('.');
+
+    // 2. HTML Template
+    container.innerHTML = `
+        <div class="page-header">
+            <div class="page-title">
+                <h1>货主充值</h1>
+                <p>管理您的账户余额，支持在线充值与提现。</p>
+            </div>
+            <div class="page-actions">
+                <button class="btn" style="background: white; border: 1px solid #e2e8f0; color: #64748b;"><i class="fas fa-history"></i> 交易记录</button>
+            </div>
+        </div>
+
+        <!-- Wallet Card -->
+        <div class="wallet-card">
+            <div class="balance-label">
+                <i class="fas fa-wallet"></i> 账户余额 (元)
+                <i class="fas fa-eye" id="balance-eye" style="cursor: pointer; opacity: 0.7; margin-left: 8px;"></i>
+            </div>
+            <div class="balance-amount" id="balance-display">
+                ${whole}<small>.${decimal}</small>
+            </div>
+            <div class="wallet-actions">
+                <button class="wallet-btn primary" id="btn-recharge">
+                    <i class="fas fa-plus"></i> 立即充值
+                </button>
+                <button class="wallet-btn" id="btn-withdraw">
+                    <i class="fas fa-arrow-down"></i> 余额提现
+                </button>
+            </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="card">
+            <div class="card-header">
+                <h3>最近交易</h3>
+                <a href="#" style="font-size: 0.8rem; color: var(--primary-color);">查看全部</a>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>交易时间</th>
+                        <th>类型</th>
+                        <th>说明</th>
+                        <th>金额</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${window.walletData.transactions.length > 0 ? window.walletData.transactions.map(t => `
+                        <tr>
+                            <td>${t.time}</td>
+                            <td>${t.title}</td>
+                            <td>${t.type === 'recharge' ? '银行卡充值' : (t.type === 'withdraw' ? '提现至银行卡' : '运费支付')}</td>
+                            <td style="font-weight: bold; color: ${t.amount > 0 ? '#10b981' : '#ef4444'}">
+                                ${t.amount > 0 ? '+' : ''}${t.amount.toFixed(2)}
+                            </td>
+                            <td><span class="status-chip status-active">成功</span></td>
+                        </tr>
+                    `).join('') : '<tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--text-muted);">暂无交易记录</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recharge Panel Overlay (Ported) -->
+        <div class="recharge-backdrop" id="recharge-backdrop"></div>
+        <div class="recharge-panel" id="recharge-panel">
+            <button class="close-panel-btn" id="close-recharge"><i class="fas fa-times"></i></button>
+            
+            <div class="step-indicator">
+                <div class="step active" id="step-1">
+                    <div class="step-circle">1</div>
+                    <div class="step-text">选择金额</div>
+                </div>
+                <div class="step" id="step-2">
+                    <div class="step-circle">2</div>
+                    <div class="step-text">支付方式</div>
+                </div>
+                <div class="step" id="step-3">
+                    <div class="step-circle">3</div>
+                    <div class="step-text">完成</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Amount -->
+            <div id="recharge-step-1">
+                <div class="amount-selection">
+                    <h3>充值金额</h3>
+                    <div class="amount-options" id="amount-options">
+                        <div class="amount-option selected" data-value="1000">
+                            <div class="amount-value">1,000</div>
+                            <div class="amount-note">元</div>
+                        </div>
+                        <div class="amount-option" data-value="2000">
+                            <div class="amount-value">2,000</div>
+                            <div class="amount-note">元</div>
+                        </div>
+                        <div class="amount-option" data-value="5000">
+                            <div class="amount-value">5,000</div>
+                            <div class="amount-note">送50元券</div>
+                        </div>
+                        <div class="amount-option" data-value="10000">
+                            <div class="amount-value">10,000</div>
+                            <div class="amount-note">送200元券</div>
+                        </div>
+                        <div class="amount-option" data-value="20000">
+                            <div class="amount-value">20,000</div>
+                            <div class="amount-note">送500元券</div>
+                        </div>
+                        <div class="amount-option" data-value="custom">
+                            <div class="amount-value">其他</div>
+                            <div class="amount-note">自定义</div>
+                        </div>
+                    </div>
+                    <div class="custom-amount hidden" id="custom-amount-input-div">
+                        <h4>输入金额</h4>
+                        <input type="number" id="custom-amount-input" class="form-input" placeholder="请输入充值金额 (最低100元)">
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <div style="flex:1"></div>
+                    <button class="btn btn-primary" id="btn-next-step" style="width: 120px; justify-content: center;">下一步</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Payment -->
+            <div id="recharge-step-2" class="hidden">
+                 <div class="payment-methods">
+                    <h3>支付方式</h3>
+                    <div class="payment-options">
+                        <div class="payment-option selected" data-pay="alipay">
+                            <div class="payment-icon alipay"><i class="fab fa-alipay"></i></div>
+                            <div class="payment-info">
+                                <h4>支付宝</h4>
+                                <p>推荐支付宝用户使用</p>
+                            </div>
+                        </div>
+                        <div class="payment-option" data-pay="wechat">
+                            <div class="payment-icon wechat"><i class="fab fa-weixin"></i></div>
+                            <div class="payment-info">
+                                <h4>微信支付</h4>
+                                <p>亿万用户的选择</p>
+                            </div>
+                        </div>
+                        <div class="payment-option" data-pay="bank">
+                            <div class="payment-icon bank"><i class="fas fa-university"></i></div>
+                            <div class="payment-info">
+                                <h4>企业网银</h4>
+                                <p>大额转账推荐</p>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+                 <div class="action-buttons">
+                    <button class="btn" id="btn-prev-step" style="border: 1px solid #e2e8f0; background: white;">上一步</button>
+                    <button class="btn btn-primary" id="btn-confirm-pay" style="flex:1; justify-content: center;">确认支付 <span id="pay-amount-display" style="margin-left:8px;"></span></button>
+                 </div>
+            </div>
+
+            <!-- Step 3: Success -->
+            <div id="recharge-step-3" class="hidden">
+                <div class="success-message">
+                    <div class="success-icon"><i class="fas fa-check"></i></div>
+                    <h2>充值成功</h2>
+                    <p style="color: #64748b; margin-top: 10px;">资金已实时到账，您现在可以进行支付。</p>
+                    <button class="btn btn-primary" id="btn-finish-recharge" style="margin-top: 30px; width: 200px; justify-content: center;">完成</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 3. Logic Binding
+    // Re-use logic from app ported but adapted
+    let currentAmount = 1000;
+
+    // Balance Toggle
+    const eye = document.getElementById('balance-eye');
+    const display = document.getElementById('balance-display');
+    let visible = true;
+    eye.onclick = () => {
+        visible = !visible;
+        eye.className = visible ? 'fas fa-eye' : 'fas fa-eye-slash';
+        if (visible) {
+            const [w, d] = window.walletData.balance.toFixed(2).split('.');
+            display.innerHTML = `${w}<small>.${d}</small>`;
+        } else {
+            display.innerHTML = '****';
+        }
+    };
+
+    // Open/Close Panel
+    const panel = document.getElementById('recharge-panel');
+    const backdrop = document.getElementById('recharge-backdrop');
+    const closeBtn = document.getElementById('close-recharge');
+
+    document.getElementById('btn-recharge').onclick = () => {
+        panel.classList.add('active');
+        backdrop.classList.add('active');
+        resetRechargeFlow();
+    };
+
+    const closeRecharge = () => {
+        panel.classList.remove('active');
+        backdrop.classList.remove('active');
+    };
+    closeBtn.onclick = closeRecharge;
+    backdrop.onclick = closeRecharge;
+
+    // Amount Selection
+    const options = document.querySelectorAll('.amount-option');
+    const customInputDiv = document.getElementById('custom-amount-input-div');
+    const customInput = document.getElementById('custom-amount-input');
+
+    options.forEach(opt => {
+        opt.onclick = () => {
+            options.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            const val = opt.getAttribute('data-value');
+            if (val === 'custom') {
+                customInputDiv.classList.remove('hidden');
+                currentAmount = 0;
+            } else {
+                customInputDiv.classList.add('hidden');
+                currentAmount = parseInt(val);
+                customInput.value = '';
+            }
+        };
+    });
+
+    customInput.oninput = (e) => {
+        currentAmount = parseFloat(e.target.value) || 0;
+    };
+
+    // Steps Logic
+    const step1 = document.getElementById('recharge-step-1');
+    const step2 = document.getElementById('recharge-step-2');
+    const step3 = document.getElementById('recharge-step-3'); // success only
+    const stepIndicator2 = document.getElementById('step-2');
+    const stepIndicator3 = document.getElementById('step-3');
+
+    document.getElementById('btn-next-step').onclick = () => {
+        if (currentAmount <= 0) {
+            // Using a simple alert for now
+            alert('请选择或输入有效的充值金额');
+            return;
+        }
+        step1.classList.add('hidden');
+        step2.classList.remove('hidden');
+        stepIndicator2.classList.add('active');
+        document.getElementById('pay-amount-display').innerText = '¥ ' + currentAmount.toFixed(2);
+    };
+
+    document.getElementById('btn-prev-step').onclick = () => {
+        step2.classList.add('hidden');
+        step1.classList.remove('hidden');
+        stepIndicator2.classList.remove('active');
+    };
+
+    // Payment Confirm (Simulation)
+    document.getElementById('btn-confirm-pay').onclick = () => {
+        // Handle Payment Option Selection
+        const selectedPay = document.querySelector('.payment-option.selected')?.getAttribute('data-pay') || 'alipay';
+
+        const btn = document.getElementById('btn-confirm-pay');
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 支付中...';
+
+        // Simulate API call
+        setTimeout(() => {
+            // Success
+            window.walletData.balance += currentAmount;
+            window.walletData.transactions.unshift({
+                id: Date.now(),
+                type: 'recharge',
+                title: '快充值',
+                time: new Date().toLocaleString(),
+                amount: currentAmount,
+                status: 'success'
+            });
+
+            step2.classList.add('hidden');
+            step3.classList.remove('hidden');
+            stepIndicator2.classList.add('completed');
+            stepIndicator2.classList.remove('active');
+            stepIndicator3.classList.add('completed'); // or active
+            stepIndicator3.classList.add('active');
+
+            // Refresh balance label if visible
+            if (visible) {
+                const [w, d] = window.walletData.balance.toFixed(2).split('.');
+                display.innerHTML = `${w}<small>.${d}</small>`;
+            }
+        }, 1200);
+    };
+
+    document.getElementById('btn-finish-recharge').onclick = () => {
+        closeRecharge();
+        // Re-render to show transaction update
+        setTimeout(() => renderConsignorRecharge(container), 300);
+    };
+
+    const resetRechargeFlow = () => {
+        step1.classList.remove('hidden');
+        step2.classList.add('hidden');
+        step3.classList.add('hidden');
+        stepIndicator2.classList.remove('active');
+        stepIndicator2.classList.remove('completed');
+        stepIndicator3.classList.remove('active');
+        stepIndicator3.classList.remove('completed');
+
+        // Reset amount
+        currentAmount = 1000;
+        options.forEach(o => o.classList.remove('selected'));
+        options[0].classList.add('selected'); // Default 1000 is first
+        customInputDiv.classList.add('hidden');
+        customInput.value = '';
+
+        // Reset button
+        const btn = document.getElementById('btn-confirm-pay');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '确认支付 <span id="pay-amount-display"></span>';
+        }
+
+        // Reset Payment Option
+        document.querySelectorAll('.payment-option').forEach(p => p.classList.remove('selected'));
+        const firstPay = document.querySelector('.payment-option');
+        if (firstPay) firstPay.classList.add('selected');
+    };
+
+    // Payment Option Select Logic
+    document.querySelectorAll('.payment-option').forEach(p => {
+        p.onclick = () => {
+            document.querySelectorAll('.payment-option').forEach(x => x.classList.remove('selected'));
+            p.classList.add('selected');
+        }
+    });
+
+    // Withdraw (Minimal Implementation)
+    document.getElementById('btn-withdraw').onclick = () => {
+        // A real implementation would open a withdraw modal similar to recharge
+        // For this port, we show a basic alert or we could create a simple placeholder modal
+        const modalId = 'withdraw-modal-placeholder';
+        if (document.getElementById(modalId)) return;
+
+        const div = document.createElement('div');
+        div.id = modalId;
+        div.className = 'modal-custom';
+        div.style.display = 'flex';
+        div.innerHTML = `
+            <div class="modal-content-custom" style="width: 400px;">
+                <div class="modal-header-custom">
+                    <h3>余额提现</h3>
+                    <button class="close-modal-btn" onclick="document.getElementById('${modalId}').remove()">&times;</button>
+                </div>
+                <div style="text-align: center; padding: 20px 0;">
+                     <i class="fas fa-hard-hat" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
+                     <p>提现功能正在维护中，请联系客服处理。</p>
+                     <p style="color: #64748b; margin-top: 8px;">客服电话：400-888-8888</p>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="document.getElementById('${modalId}').remove()" style="width: 100%; justify-content: center;">知道了</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(div);
+    };
 };
