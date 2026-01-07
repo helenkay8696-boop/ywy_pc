@@ -278,7 +278,7 @@ if (!window.cargoData2) {
         { id: 'CG2512298406', start: '重庆', end: '贵阳', customer: '长安汽车\n配件', quantity: '10 吨', time: '2026-01-02', status: '已电子回单', statusText: '已电子回单', actions: ['查看', '查看回单'] },
         { id: 'CG2512298407', start: '天津', end: '沈阳', customer: '一汽大众\n配件', quantity: '5 吨', time: '2026-01-03', status: '已纸质回单', statusText: '已纸质回单', actions: ['查看', '查看回单', '结算'] },
         { id: 'CG2512298408', start: '青岛', end: '济南', customer: '海尔智家\n洗衣机', quantity: '300 台', time: '2026-01-04', status: '已结算', statusText: '已结算', actions: ['查看'] },
-        { id: 'CG2512298409', start: '南京', end: '苏州', customer: '苏宁易购\n电器', quantity: '500 件', time: '2026-01-05', status: '已完成', statusText: '已完成', actions: ['查看', '再来一单'] },
+        { id: 'CG2512298409', start: '南京', end: '苏州', customer: '苏宁易购\n电器', quantity: '500 件', time: '2026-01-05', status: '已完成', statusText: '已完成', actions: ['查看', '评价', '再来一单'] },
         { id: 'CG2512298410', start: '厦门', end: '福州', customer: '安踏体育\n鞋服', quantity: '200 箱', time: '-', status: '已取消', statusText: '已取消', actions: ['查看', '恢复'] },
         { id: 'CG2512298411', start: '郑州', end: '洛阳', customer: '宇通客车\n配件', quantity: '8 吨', time: '-', status: '回收站', statusText: '回收站', actions: ['恢复', '彻底删除'] },
         { id: 'CG2512298412', start: '昆明', end: '大理', customer: '云南白药\n药品', quantity: '100 箱', time: '2026-01-06', status: '异常运单', statusText: '异常运单', actions: ['查看', '删除', '处理异常'] }
@@ -597,17 +597,19 @@ const renderOrderStatus = (container) => {
     // Initialize global waybill data if not exists
     if (!window.waybillData) {
         window.waybillData = [
-            { id: '#ORD-9021', route: '广州天河区 → 上海浦东新区', driver: '王师傅 (9.6米厢式)', status: 'transit', statusText: '运输中', detail: '距终点145km', eta: '今日 18:00', actions: ['track'], plate: '粤B·90211', quantity: '1200件' },
-            { id: '#ORD-9018', route: '中山火炬 → 常州武进', driver: '李师傅 (13米平板)', status: 'transit', statusText: '运输中', detail: '已进入江浙', eta: '明天 09:30', actions: ['track'], plate: '粤B·90188', quantity: '800件' },
-            { id: '#ORD-9022', route: '深圳南山 → 北京朝阳', driver: '未接单', status: 'pending', statusText: '未接单', detail: '等待司机接单', eta: '-', actions: ['cancel'], plate: '-', quantity: '-' },
-            { id: '#ORD-9023', route: '佛山南海 → 长沙雨花', driver: '张师傅 (4.2米)', status: 'accepted', statusText: '已接单', detail: '司机前往装货地', eta: '明日 10:00', actions: [], plate: '粤A·90233', quantity: '500件' },
-            { id: '#ORD-9015', route: '东莞松山湖 → 武汉江夏', driver: '陈师傅 (6.8米)', status: 'signed', statusText: '已签收', detail: '电子回单待上传', eta: '已送达', actions: ['track', 'rate'], plate: '粤S·90155', quantity: '300箱' },
-            { id: '#ORD-9012', route: '珠海高新 → 杭州西湖', driver: '刘师傅 (9.6米)', status: 'returned', statusText: '已回单', detail: '回单审核中', eta: '已送达', actions: ['view_receipt'], plate: '粤C·90122', quantity: '15吨' },
-            { id: '#ORD-9008', route: '惠州仲恺 → 南京江宁', driver: '赵师傅 (13米)', status: 'settled', statusText: '已结算', detail: '运费已支付', eta: '已送达', actions: ['view_settlement'], plate: '粤L·90088', quantity: '1200件' },
-            { id: '#ORD-9005', route: '江门蓬江 → 成都双流', driver: '-', status: 'cancelled', statusText: '已取消', detail: '货主主动取消', eta: '-', actions: [], plate: '-', quantity: '-' },
+            { id: '#ORD-9021', route: '广州天河区 → 上海浦东新区', driver: '王师傅 (9.6米厢式)', status: 'transit', statusText: '运输中', detail: '距终点145km', eta: '今日 18:00', actions: ['track'], plate: '粤B·90211', quantity: '1200件', freight: 1200 },
+            { id: '#ORD-9018', route: '中山火炬 → 常州武进', driver: '李师傅 (13米平板)', status: 'transit', statusText: '运输中', detail: '已进入江浙', eta: '明天 09:30', actions: ['track'], plate: '粤B·90188', quantity: '800件', freight: 2500 },
+            { id: '#ORD-9022', route: '深圳南山 → 北京朝阳', driver: '未接单', status: 'pending', statusText: '未接单', detail: '等待司机接单', eta: '-', actions: ['cancel'], plate: '-', quantity: '-', freight: 1500 },
+            { id: '#ORD-9023', route: '佛山南海 → 长沙雨花', driver: '张师傅 (4.2米)', status: 'accepted', statusText: '已接单', detail: '司机前往装货地', eta: '明日 10:00', actions: [], plate: '粤A·90233', quantity: '500件', freight: 800 },
+            { id: '#ORD-9015', route: '东莞松山湖 → 武汉江夏', driver: '陈师傅 (6.8米)', status: 'signed', statusText: '已签收', detail: '电子回单待上传', eta: '已送达', actions: ['track', 'rate'], plate: '粤S·90155', quantity: '300箱', freight: 600 },
+            { id: '#ORD-9012', route: '珠海高新 → 杭州西湖', driver: '刘师傅 (9.6米)', status: 'returned', statusText: '已回单', detail: '回单审核中', eta: '已送达', actions: ['view_receipt'], plate: '粤C·90122', quantity: '15吨', freight: 3000 },
+            { id: '#ORD-9008', route: '惠州仲恺 → 南京江宁', driver: '赵师傅 (13米)', status: 'settled', statusText: '已结算', detail: '运费已支付', eta: '已送达', actions: ['view_settlement'], plate: '粤L·90088', quantity: '1200件', freight: 2000 },
+            { id: '#ORD-9005', route: '江门蓬江 → 成都双流', driver: '-', status: 'cancelled', statusText: '已取消', detail: '货主主动取消', eta: '-', actions: [], plate: '-', quantity: '-', freight: 0 },
         ];
     }
-    const mockOrders = window.waybillData;
+    const mockOrders = window.waybillData.filter(item =>
+        !['pending', 'accepted', 'settled', 'cancelled'].includes(item.status)
+    );
 
     container.innerHTML = `
         <div class="page-header">
@@ -630,13 +632,9 @@ const renderOrderStatus = (container) => {
             <!-- Filter Bar -->
             <div style="margin-bottom: 24px; display: flex; gap: 8px; flex-wrap: wrap;">
                 <button class="btn filter-btn active" data-filter="all" style="background: var(--primary-color); color: white;">全部</button>
-                <button class="btn filter-btn" data-filter="pending" style="background: #f1f5f9; color: var(--text-main);">未接单</button>
-                <button class="btn filter-btn" data-filter="accepted" style="background: #f1f5f9; color: var(--text-main);">已接单</button>
                 <button class="btn filter-btn" data-filter="transit" style="background: #f1f5f9; color: var(--text-main);">运输中</button>
                 <button class="btn filter-btn" data-filter="signed" style="background: #f1f5f9; color: var(--text-main);">已签收</button>
                 <button class="btn filter-btn" data-filter="returned" style="background: #f1f5f9; color: var(--text-main);">已回单</button>
-                <button class="btn filter-btn" data-filter="settled" style="background: #f1f5f9; color: var(--text-main);">已结算</button>
-                <button class="btn filter-btn" data-filter="cancelled" style="background: #f1f5f9; color: var(--text-main);">已取消</button>
             </div>
 
             <!-- Orders Table -->
@@ -2254,8 +2252,8 @@ window.previewContract = (id) => {
 window.renderCargoManagement2 = (container) => {
     const statuses = [
         '全部', '草稿', '未接单', '已接单', '运输中', '已签收',
-        '已电子回单', '已纸质回单', '已结算', '已完成',
-        '已取消', '回收站', '异常运单'
+        '已回单', '已结算', '已完成',
+        '已取消', '回收站'
     ];
 
     // Status color mapping for badges
@@ -2267,13 +2265,13 @@ window.renderCargoManagement2 = (container) => {
             '待评价': 'background: #f3e8ff; color: #6b21a8;', // Purple
             '运输中': 'background: #e0f2fe; color: #075985;', // Blue
             '草稿': 'background: #f1f5f9; color: #64748b;',
-            '已电子回单': 'background: #dcfce7; color: #166534;',
-            '已纸质回单': 'background: #dcfce7; color: #166534;',
+            '已回单': 'background: #dcfce7; color: #166534;',
+            '已电子回单': 'background: #dcfce7; color: #166534;', // Keep for compatibility
+            '已纸质回单': 'background: #dcfce7; color: #166534;', // Keep for compatibility
             '已结算': 'background: #dcfce7; color: #166534;',
             '已完成': 'background: #f1f5f9; color: #64748b;',
             '已取消': 'background: #fee2e2; color: #991b1b;',
             '回收站': 'background: #fee2e2; color: #991b1b;',
-            '异常运单': 'background: #fee2e2; color: #991b1b;',
             '默认': 'background: #f1f5f9; color: #334155;'
         };
         return styles[status] || styles[status.replace('已', '待')] || styles['默认']; // Fallback
@@ -2286,7 +2284,11 @@ window.renderCargoManagement2 = (container) => {
 
         // 1. Tab Filter
         if (activeTab !== '全部') {
-            data = data.filter(item => item.statusText === activeTab || item.status === activeTab);
+            if (activeTab === '已回单') {
+                data = data.filter(item => item.statusText === '已电子回单' || item.statusText === '已纸质回单');
+            } else {
+                data = data.filter(item => item.statusText === activeTab || item.status === activeTab);
+            }
         }
 
         // 2. Search Controls Filter
@@ -2300,6 +2302,9 @@ window.renderCargoManagement2 = (container) => {
         if (filters.end) {
             data = data.filter(item => item.end && item.end.includes(filters.end));
         }
+
+        // Filter out '异常运单' as it is deleted
+        data = data.filter(item => item.statusText !== '异常运单');
 
         return data;
     };
@@ -2366,7 +2371,14 @@ window.renderCargoManagement2 = (container) => {
                             </tr>
                         </thead>
                         <tbody>
-                            ${filteredData.map(item => `
+                            ${filteredData.map(item => {
+        // Normalize status display
+        let displayStatus = item.statusText;
+        if (displayStatus === '已电子回单' || displayStatus === '已纸质回单') {
+            displayStatus = '已回单';
+        }
+
+        return `
                         <tr onclick="window.navigateTo('cargoDetail', {id: '${item.id}', from: 'cargoList'})" style="cursor: pointer; border-bottom: 1px solid #f8fafc; transition: background 0.2s;" onmouseover="this.style.background='#f8fbff'" onmouseout="this.style.background='transparent'">
                             <td style="padding: 20px 16px; color: #4f46e5; font-weight: 700; font-family: monospace; font-size: 1rem;">${item.id}</td>
                             <td style="padding: 20px 16px;">
@@ -2395,8 +2407,8 @@ window.renderCargoManagement2 = (container) => {
                                 </td>
                             <td style="padding: 20px 16px;">
                                 <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
-                                    <span style="padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; min-width: 80px; text-align: center; white-space: nowrap; ${window.getStatusStyle(item.statusText)}">
-                                        ${item.statusText}
+                                    <span style="padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; min-width: 80px; text-align: center; white-space: nowrap; ${window.getStatusStyle(displayStatus)}">
+                                        ${displayStatus}
                                     </span>
                                 </div>
                             </td>
@@ -2406,7 +2418,8 @@ window.renderCargoManagement2 = (container) => {
                                 </div>
                             </td>
                         </tr>
-                    `).join('')}
+                    `;
+    }).join('')}
                             ${filteredData.length === 0 ? `<tr><td colspan="8" style="text-align: center; padding: 60px; color: #94a3b8;">暂无此状态的货单数据</td></tr>` : ''}
                         </tbody>
                     </table>
@@ -2522,9 +2535,7 @@ const renderClaimRows = (claims) => {
     return claims.map(claim => {
         let statusColor = claim.status === 'pending' ? '#ef4444' : '#10b981';
         let bg = claim.status === 'pending' ? '#fee2e2' : '#dcfce7';
-        let btn = claim.status === 'processed'
-            ? `<button class="btn-text" onclick="window.openClaimDetailView('${claim.id}')">查看详情</button>`
-            : `<button class="btn" style="padding:6px 12px; font-size:0.85rem; background:#5345ec; color:white; border-radius:8px;" onclick="window.openProcessClaimModal('${claim.id}')">去处理</button>`;
+        let btn = `<button class="btn-text" onclick="window.openClaimDetailView('${claim.id}')">查看详情</button>`;
 
         return `
                 <tr>
@@ -4218,7 +4229,7 @@ window.renderActionMenu = (item, primaryCount = 2) => {
         if (a === '下载') return `window.downloadContract('${item.id}')`;
         if (['查看轨迹', '轨迹'].includes(a)) return `window.viewOrderTrack('${item.id}')`;
         if (['查看回单', '回单'].includes(a)) return `window.viewCargo2Receipt('${item.id}')`;
-        if (a === '评价司机') return `window.openCargo2ReviewModal('${item.id}')`;
+        if (['评价司机', '评价'].includes(a)) return `window.openCargo2ReviewModal('${item.id}')`;
         if (a === '删除') {
             if (item.id.startsWith('CON-')) return `showToast('删除功能开发中')`;
             return `window.deleteCargo2('${item.id}')`;
@@ -4431,6 +4442,23 @@ window.renderConsignorRecharge = (container) => {
                  </div>
             </div>
 
+            <!-- Step 2.5: QR Code Payment -->
+            <div id="recharge-step-qr" class="hidden" style="text-align: center; padding: 20px;">
+                <h3 id="qr-pay-title" style="margin-bottom: 20px; font-size: 1.2rem;">请使用手机扫码支付</h3>
+                <div style="background: white; padding: 20px; display: inline-block; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                    <!-- Placeholder for QR Code - Using a generic icon approach or could be an image -->
+                    <div style="width: 200px; height: 200px; background: #f8fafc; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; border: 1px dashed #cbd5e1;">
+                         <i class="fas fa-qrcode" style="font-size: 80px; color: #334155;"></i>
+                    </div>
+                    <p style="color: #64748b; font-size: 0.9rem;">支付金额: <span id="qr-pay-amount" style="font-weight: bold; color: #0f172a;"></span></p>
+                </div>
+                <div style="margin-top: 30px;">
+                    <p style="margin-bottom: 16px; color: #64748b;">扫码支付后，请点击下方按钮</p>
+                    <button class="btn btn-primary" id="btn-qr-paid" style="padding: 10px 40px;">我已完成支付</button>
+                    <button class="btn" id="btn-qr-back" style="margin-left: 10px; background: #f1f5f9; color: #64748b;">选择其他方式</button>
+                </div>
+            </div>
+
             <!-- Step 3: Success -->
             <div id="recharge-step-3" class="hidden">
                 <div class="success-message">
@@ -4442,6 +4470,44 @@ window.renderConsignorRecharge = (container) => {
             </div>
         </div>
     `;
+
+    // Injecting Withdrawal Modal into the main template
+    container.innerHTML = container.innerHTML.replace('<!-- Recharge Panel Overlay (Ported) -->', `
+        <!-- Withdrawal Panel Overlay -->
+        <div class="recharge-backdrop" id="withdraw-backdrop"></div>
+        <div class="recharge-panel" id="withdraw-panel">
+            <button class="close-panel-btn" id="close-withdraw"><i class="fas fa-times"></i></button>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="font-size: 1.25rem; font-weight: bold; color: #1e293b;">余额提现</h2>
+                <p style="color: #64748b; font-size: 0.9rem; margin-top: 5px;">提现到银行卡</p>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; color: #475569; font-weight: 500; margin-bottom: 10px;">提现金额</label>
+                <div style="display: flex; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+                    <span style="font-size: 1.5rem; font-weight: bold; color: #1e293b; margin-right: 10px;">¥</span>
+                    <input type="number" id="withdraw-amount-input" style="border: none; outline: none; font-size: 1.5rem; font-weight: bold; width: 100%; color: #1e293b;" placeholder="0.00">
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.85rem;">
+                    <span style="color: #64748b;">可提现余额 ¥ <span id="withdraw-available-balance">0.00</span></span>
+                    <button class="btn-text" id="btn-withdraw-all" style="color: var(--primary-color); font-weight: 500; border: none; background: none; cursor: pointer;">全部提现</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                 <label style="display: block; color: #475569; font-weight: 500; margin-bottom: 10px;">提现至</label>
+                 <div id="withdraw-bank-list" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Bank Cards Injected Here -->
+                 </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="btn-confirm-withdraw" style="width: 100%; justify-content: center; padding: 12px;">确认提现</button>
+            </div>
+        </div>
+
+        <!-- Recharge Panel Overlay (Ported) -->
+    `);
 
     // 3. Logic Binding
     // Re-use logic from app ported but adapted
@@ -4531,41 +4597,85 @@ window.renderConsignorRecharge = (container) => {
     };
 
     // Payment Confirm (Simulation)
+    // Payment Confirm & QR Logic
+    const stepQr = document.getElementById('recharge-step-qr');
+    const qrTitle = document.getElementById('qr-pay-title');
+    const qrAmount = document.getElementById('qr-pay-amount');
+
     document.getElementById('btn-confirm-pay').onclick = () => {
         // Handle Payment Option Selection
         const selectedPay = document.querySelector('.payment-option.selected')?.getAttribute('data-pay') || 'alipay';
 
+        if (['alipay', 'wechat'].includes(selectedPay)) {
+            // Show QR Code Step
+            step2.classList.add('hidden');
+            stepQr.classList.remove('hidden');
+
+            qrAmount.innerText = '¥ ' + currentAmount.toFixed(2);
+            if (selectedPay === 'alipay') {
+                qrTitle.innerText = '请使用支付宝扫码支付';
+                qrTitle.style.color = '#1677ff'; // Alipay Blue
+            } else {
+                qrTitle.innerText = '请使用微信扫码支付';
+                qrTitle.style.color = '#07c160'; // WeChat Green
+            }
+            return;
+        }
+
+        // Bank Transfer or other direct methods (Transition directly to success simulation)
         const btn = document.getElementById('btn-confirm-pay');
         const originalContent = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 支付中...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
 
-        // Simulate API call
         setTimeout(() => {
-            // Success
-            window.walletData.balance += currentAmount;
-            window.walletData.transactions.unshift({
-                id: Date.now(),
-                type: 'recharge',
-                title: '快充值',
-                time: new Date().toLocaleString(),
-                amount: currentAmount,
-                status: 'success'
-            });
-
-            step2.classList.add('hidden');
-            step3.classList.remove('hidden');
-            stepIndicator2.classList.add('completed');
-            stepIndicator2.classList.remove('active');
-            stepIndicator3.classList.add('completed'); // or active
-            stepIndicator3.classList.add('active');
-
-            // Refresh balance label if visible
-            if (visible) {
-                const [w, d] = window.walletData.balance.toFixed(2).split('.');
-                display.innerHTML = `${w}<small>.${d}</small>`;
-            }
+            finishPaymentSuccess();
         }, 1200);
+    };
+
+    // QR Code Page Buttons
+    document.getElementById('btn-qr-paid').onclick = () => {
+        const btn = document.getElementById('btn-qr-paid');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 确认中...';
+
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '我已完成支付';
+            stepQr.classList.add('hidden');
+            finishPaymentSuccess();
+        }, 1000);
+    };
+
+    document.getElementById('btn-qr-back').onclick = () => {
+        stepQr.classList.add('hidden');
+        step2.classList.remove('hidden');
+    };
+
+    const finishPaymentSuccess = () => {
+        window.walletData.balance += currentAmount;
+        window.walletData.transactions.unshift({
+            id: Date.now(),
+            type: 'recharge',
+            title: '快充值',
+            time: new Date().toLocaleString(),
+            amount: currentAmount,
+            status: 'success'
+        });
+
+        step2.classList.add('hidden'); // ensure step2 is hidden
+        stepQr.classList.add('hidden'); // ensure qr is hidden
+        step3.classList.remove('hidden');
+        stepIndicator2.classList.add('completed');
+        stepIndicator2.classList.remove('active');
+        stepIndicator3.classList.add('completed');
+        stepIndicator3.classList.add('active');
+
+        // Refresh balance label if visible
+        if (visible) {
+            const [w, d] = window.walletData.balance.toFixed(2).split('.');
+            display.innerHTML = `${w}<small>.${d}</small>`;
+        }
     };
 
     document.getElementById('btn-finish-recharge').onclick = () => {
@@ -4577,6 +4687,7 @@ window.renderConsignorRecharge = (container) => {
     const resetRechargeFlow = () => {
         step1.classList.remove('hidden');
         step2.classList.add('hidden');
+        if (stepQr) stepQr.classList.add('hidden'); // Reset QR step
         step3.classList.add('hidden');
         stepIndicator2.classList.remove('active');
         stepIndicator2.classList.remove('completed');
@@ -4612,32 +4723,122 @@ window.renderConsignorRecharge = (container) => {
     });
 
     // Withdraw (Minimal Implementation)
-    document.getElementById('btn-withdraw').onclick = () => {
-        // A real implementation would open a withdraw modal similar to recharge
-        // For this port, we show a basic alert or we could create a simple placeholder modal
-        const modalId = 'withdraw-modal-placeholder';
-        if (document.getElementById(modalId)) return;
+    // Withdraw Logic
+    const wPanel = document.getElementById('withdraw-panel');
+    const wBackdrop = document.getElementById('withdraw-backdrop');
+    const wClose = document.getElementById('close-withdraw');
+    const wInput = document.getElementById('withdraw-amount-input');
+    const wAvail = document.getElementById('withdraw-available-balance');
+    const wAllBtn = document.getElementById('btn-withdraw-all');
+    const wConfirm = document.getElementById('btn-confirm-withdraw');
+    const wList = document.getElementById('withdraw-bank-list');
 
-        const div = document.createElement('div');
-        div.id = modalId;
-        div.className = 'modal-custom';
-        div.style.display = 'flex';
-        div.innerHTML = `
-            <div class="modal-content-custom" style="width: 400px;">
-                <div class="modal-header-custom">
-                    <h3>余额提现</h3>
-                    <button class="close-modal-btn" onclick="document.getElementById('${modalId}').remove()">&times;</button>
+    let availableAmount = 0;
+
+    document.getElementById('btn-withdraw').onclick = () => {
+        wPanel.classList.add('active');
+        wBackdrop.classList.add('active');
+
+        // Calculate Frozen Funds
+        if (!window.waybillData) renderOrderStatus(document.createElement('div')); // Init data if needed
+        const frozenAmount = window.waybillData
+            .filter(order => !['settled', 'cancelled'].includes(order.status))
+            .reduce((sum, order) => sum + (order.freight || 0), 0);
+
+        availableAmount = Math.max(0, window.walletData.balance - frozenAmount);
+
+        // Update UI
+        // wAvail.innerText = window.walletData.balance.toFixed(2); 
+        wAvail.innerHTML = `${availableAmount.toFixed(2)} <span style="font-size: 0.8rem; color: #f59e0b; margin-left: 5px;">(冻结: ¥${frozenAmount.toFixed(2)})</span>`;
+
+        wInput.value = '';
+        renderBankCards();
+    };
+
+    const closeWithdraw = () => {
+        wPanel.classList.remove('active');
+        wBackdrop.classList.remove('active');
+    };
+    wClose.onclick = closeWithdraw;
+    wBackdrop.onclick = (e) => {
+        if (e.target === wBackdrop) closeWithdraw();
+    };
+
+    wAllBtn.onclick = () => {
+        wInput.value = availableAmount.toFixed(2);
+    };
+
+    const renderBankCards = () => {
+        wList.innerHTML = window.walletData.bankCards.map((card, index) => `
+            <div class="bank-card-item ${index === 0 ? 'selected' : ''}" onclick="selectBankCard(this)" style="display: flex; align-items: center; padding: 12px; border: 1px solid ${index === 0 ? 'var(--primary-color)' : '#e2e8f0'}; border-radius: 8px; cursor: pointer; background: ${index === 0 ? '#eff6ff' : 'white'};">
+                <div class="bank-icon" style="width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                    <i class="fas fa-university" style="color: #64748b;"></i>
                 </div>
-                <div style="text-align: center; padding: 20px 0;">
-                     <i class="fas fa-hard-hat" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
-                     <p>提现功能正在维护中，请联系客服处理。</p>
-                     <p style="color: #64748b; margin-top: 8px;">客服电话：400-888-8888</p>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500; color: #1e293b;">${card.bankName}</div>
+                    <div style="font-size: 0.85rem; color: #64748b;">尾号 ${card.cardNumber} ${card.cardType}</div>
                 </div>
-                <div style="margin-top: 20px;">
-                    <button class="btn btn-primary" onclick="document.getElementById('${modalId}').remove()" style="width: 100%; justify-content: center;">知道了</button>
-                </div>
+                ${index === 0 ? '<i class="fas fa-check-circle" style="color: var(--primary-color);"></i>' : ''}
             </div>
-        `;
-        document.body.appendChild(div);
+        `).join('');
+    };
+
+    // Global helper for selection (since strict mode might block inline onclick finding local func)
+    window.selectBankCard = (el) => {
+        const siblings = el.parentElement.children;
+        for (let sib of siblings) {
+            sib.classList.remove('selected');
+            sib.style.borderColor = '#e2e8f0';
+            sib.style.background = 'white';
+            const check = sib.querySelector('.fa-check-circle');
+            if (check) check.remove();
+        }
+        el.classList.add('selected');
+        el.style.borderColor = 'var(--primary-color)';
+        el.style.background = '#eff6ff';
+        el.innerHTML += '<i class="fas fa-check-circle" style="color: var(--primary-color);"></i>';
+    };
+
+    wConfirm.onclick = () => {
+        const amount = parseFloat(wInput.value);
+        if (!amount || amount <= 0) {
+            alert('请输入有效的提现金额');
+            return;
+        }
+        if (amount > availableAmount) {
+            if (amount <= window.walletData.balance) {
+                alert('可用余额不足（部分资金因在途运单已被冻结）');
+            } else {
+                alert('余额不足');
+            }
+            return;
+        }
+
+        wConfirm.disabled = true;
+        wConfirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+
+        setTimeout(() => {
+            wConfirm.disabled = false;
+            wConfirm.innerHTML = '确认提现';
+
+            // Success Logic
+            window.walletData.balance -= amount;
+            window.walletData.transactions.unshift({
+                id: Date.now(),
+                type: 'withdraw',
+                title: '余额提现',
+                time: new Date().toLocaleString(),
+                amount: -amount,
+                status: 'success'
+            });
+
+            closeWithdraw();
+            // Re-render
+            renderConsignorRecharge(container);
+
+            // Show toast/alert
+            // Simple Alert or Toast if available. Using alert for now as per style.
+            alert('提现申请已提交，资金将原路返回您的账户。');
+        }, 1200);
     };
 };
