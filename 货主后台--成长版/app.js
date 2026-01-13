@@ -3238,19 +3238,20 @@ const renderReceiptManagement = (container) => {
                 </div>
 
                 <div class="dashboard-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: #e0f2fe; color: #0369a1;"><i class="fas fa-file-invoice"></i></div>
-                        <div class="stat-label">待电子审核</div>
-                        <div class="stat-value">5 <span class="trend-badge trend-up">需处理</span></div>
-                    </div>
+
                     <div class="stat-card">
                         <div class="stat-icon" style="background: #fef9c3; color: #854d0e;"><i class="fas fa-envelope-open-text"></i></div>
-                        <div class="stat-label">待纸质收回</div>
+                        <div class="stat-label">待上传</div>
                         <div class="stat-value">12 <span class="trend-badge trend-up">跟进中</span></div>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-icon" style="background: #eff6ff; color: #1e40af;"><i class="fas fa-box-open"></i></div>
+                        <div class="stat-label">待签收</div>
+                        <div class="stat-value">5 <span class="trend-badge trend-up">运输中</span></div>
+                    </div>
+                    <div class="stat-card">
                         <div class="stat-icon" style="background: #dcfce7; color: #15803d;"><i class="fas fa-check-double"></i></div>
-                        <div class="stat-label">今日已完结</div>
+                        <div class="stat-label">已签收</div>
                         <div class="stat-value">28</div>
                     </div>
                     <div class="stat-card">
@@ -3261,23 +3262,29 @@ const renderReceiptManagement = (container) => {
                 </div>
 
                 <div class="card">
-                    <div class="filter-tab-container" style="display: flex; justify-content: space-between; align-items: center;">
+                    <!-- New Search Filters -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 16px; border-bottom: 1px solid #f1f5f9; background: #fff;">
+                        <input type="text" placeholder="运单号" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                        <input type="text" placeholder="配载单号" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                        <input type="text" placeholder="客户名称" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                        <input type="date" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                    </div>
+
+                    <div class="filter-tab-container" style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px;">
                         <div style="display: flex; gap: 20px;">
                             <div class="filter-tab active" data-filter="all">全部</div>
                             <div class="filter-tab" data-filter="pending-upload">待上传</div>
-                            <div class="filter-tab" data-filter="pending-e">待电子审核</div>
-                            <div class="filter-tab" data-filter="pending-p">待纸质收回</div>
-                            <div class="filter-tab" data-filter="completed">已完结</div>
+
+                            <div class="filter-tab" data-filter="pending-p">待签收</div>
+                            <div class="filter-tab" data-filter="completed">已签收</div>
                         </div>
-                        <div class="search-box" style="margin-right: 20px;">
-                            <input type="text" id="receipt-search" placeholder="搜索客户名称" style="padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.9rem; width: 200px;">
                         </div>
                     </div>
 
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th style="width: 140px;">货单号</th>
+                                <th style="width: 140px;">运单号</th>
                                 <th>装货地 / 卸货地</th>
                                 <th>客户 / 货物信息</th>
                                 <th>电子回单</th>
@@ -3567,7 +3574,10 @@ window.openReceiptDetailModal = (id) => {
                             <button class="btn" style="padding: 10px 24px; border: 1px solid #e2e8f0;" onclick="document.getElementById('modal-container').classList.add('hidden')">关闭窗口</button>
                             ${cargo.status === 'received' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.approveReceipt('${cargo.id}')"><i class="fas fa-check-circle"></i> 审核</button>` : ''}
                             ${cargo.status === 'returned' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认收回</button>` : ''}
-                            <button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-print"></i> 打印回单</button>
+                            ${(cargo.status === 'signed' || cargo.status === 'loading') ?
+            `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-cloud-upload-alt"></i> 上传回单</button>` :
+            `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-print"></i> 打印回单</button>`
+        }
                         </div>
                     </div>
                     `;
@@ -3576,7 +3586,7 @@ window.openReceiptDetailModal = (id) => {
 };
 
 window.printReceipt = (id) => {
-    showToast(`正在生成回单预览并调起打印机... (单号：${id})`);
+    showToast(`正在上传回单... (单号：${id})`);
 };
 
 window.approveReceipt = (id) => {
