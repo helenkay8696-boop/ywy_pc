@@ -3523,24 +3523,7 @@ window.openReceiptDetailModal = (id) => {
                                 <i class="fas fa-paperclip" style="color: var(--primary-color);"></i>
                                 <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">附加信息层</h3>
                             </div>
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">回单编号</label>
-                                    <span style="font-weight: 600;">${cargo.receiptSn || 'RC20260111-088'}</span>
-                                </div>
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">回单状态</label>
-                                    <span style="font-weight: 600; color: var(--primary-color);">已确认</span>
-                                </div>
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">创建/上传/确认时间</label>
-                                    <div style="font-size: 0.85rem; line-height: 1.6;">
-                                        创：2026-01-11 09:00<br>
-                                            传：2026-01-11 15:00<br>
-                                                确：2026-01-11 16:30
-                                            </div>
-                                    </div>
-                                </div>
+
                                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
                                     <div>
                                         <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">电子签名</label>
