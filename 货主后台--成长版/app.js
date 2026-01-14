@@ -3524,10 +3524,15 @@ window.openReceiptDetailModal = (id) => {
                                 <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">附加信息层</h3>
                             </div>
 
-                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                                    <div>
-                                        <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">电子签名</label>
-                                        <div style="width: 100%; height: 120px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 1px solid #e2e8f0;">
+                            ${cargo.courierNumber ? `
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">快递单号</label>
+                                <span style="font-weight: 600;">${cargo.courierNumber}</span>
+                            </div>` : ''}
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">电子签名</label>
+                                    <div style="width: 100%; height: 120px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 1px solid #e2e8f0;">
                                             <i class="fas fa-pen-nib" style="font-size: 2rem; color: #cbd5e1;"></i>
                                             <span style="position: absolute; bottom: 8px; font-size: 0.7rem; color: #94a3b8;">电子签名已加密存证</span>
                                         </div>
@@ -3558,7 +3563,8 @@ window.openReceiptDetailModal = (id) => {
                             ${cargo.status === 'received' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.approveReceipt('${cargo.id}')"><i class="fas fa-check-circle"></i> 审核</button>` : ''}
                             ${cargo.status === 'returned' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认收回</button>` : ''}
                             ${(cargo.status === 'signed' || cargo.status === 'loading') ?
-            `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.saveReceipt('${cargo.id}')"><i class="fas fa-save"></i> 保存</button>` :
+            `<button class="btn btn-primary" style="padding: 10px 24px; margin-right: 12px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认收回</button>
+             <button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.saveReceipt('${cargo.id}')"><i class="fas fa-save"></i> 保存</button>` :
             `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-print"></i> 打印回单</button>`
         }
                         </div>
@@ -3612,6 +3618,11 @@ window.confirmPaperReceipt = (id) => {
             <h3 style="font-weight:700;margin-bottom:12px;font-size:1.1rem;color:#1e293b;">确认收回</h3>
             <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px;line-height:1.5;">确认收回后将自动请款，请选择纸质回单付款类型</p>
             
+            <div style="margin-bottom:20px;">
+                <label style="display:block;font-size:0.85rem;color:#475569;margin-bottom:6px;font-weight:500;">快递单号</label>
+                <input type="text" id="courier-number" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;outline:none;transition:border-color 0.2s;" placeholder="请输入快递单号">
+            </div>
+
             <div style="margin-bottom:20px;display:flex;gap:20px;">
                 <label style="cursor:pointer;display:flex;align-items:center;gap:6px;">
                     <input type="radio" name="payType" value="prepaid" checked onchange="window.toggleCollectInput(false)"> 
@@ -3652,6 +3663,7 @@ window.toggleCollectInput = (show) => {
 
 window.submitRecovery = (id) => {
     const payType = document.querySelector('input[name="payType"]:checked').value;
+    const courierNumber = document.getElementById('courier-number').value.trim();
     let amount = 0;
 
     if (payType === 'collect') {
@@ -3668,7 +3680,8 @@ window.submitRecovery = (id) => {
     if (cargo) {
         cargo.status = 'reviewed';
         cargo.statusText = '已完成';
-        // cargo.paymentType = payType; // Ensure data model supports this if needed elsewhere
+        // cargo.paymentType = payType;
+        cargo.courierNumber = courierNumber;
 
         // Remove confirm modal
         document.getElementById('recovery-confirm-modal').remove();
@@ -3678,7 +3691,9 @@ window.submitRecovery = (id) => {
         if (modalContainer) modalContainer.classList.add('hidden');
 
         switchView('receipt-management');
-        showToast(`纸质回单已收回 (${payType === 'prepaid' ? '寄付' : '到付 ¥' + amount})，订单已完结`);
+        const payInfo = payType === 'prepaid' ? '寄付' : `到付 ¥${amount}`;
+        const courierInfo = courierNumber ? `快递单号:${courierNumber}` : '无快递单号';
+        showToast(`纸质回单已收回 (${payInfo}, ${courierInfo})，订单已完结`);
     }
 };
 
