@@ -3575,7 +3575,8 @@ window.openReceiptDetailModal = (id) => {
                             ${cargo.status === 'received' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.approveReceipt('${cargo.id}')"><i class="fas fa-check-circle"></i> 审核</button>` : ''}
                             ${cargo.status === 'returned' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认收回</button>` : ''}
                             ${(cargo.status === 'signed' || cargo.status === 'loading') ?
-            `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-cloud-upload-alt"></i> 上传回单</button>` :
+            `<button class="btn btn-primary" style="padding: 10px 24px; margin-right: 12px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-cloud-upload-alt"></i> 上传回单</button>
+             <button class="btn btn-primary" style="padding: 10px 24px; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.approveReceipt('${cargo.id}')"><i class="fas fa-check-circle"></i> 审核</button>` :
             `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-print"></i> 打印回单</button>`
         }
                         </div>
@@ -3605,17 +3606,82 @@ window.approveReceipt = (id) => {
 };
 
 window.confirmPaperReceipt = (id) => {
+    // Open the secondary confirmation modal
+    const overlay = document.createElement('div');
+    overlay.id = 'recovery-confirm-modal';
+    overlay.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:2000;display:flex;justify-content:center;align-items:center;';
+    overlay.innerHTML = `
+        <div class="modal-content" style="background:#fff;border-radius:12px;width:400px;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);">
+            <h3 style="font-weight:700;margin-bottom:12px;font-size:1.1rem;color:#1e293b;">确认收回</h3>
+            <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px;line-height:1.5;">确认收回后将自动请款，请选择纸质回单付款类型</p>
+            
+            <div style="margin-bottom:20px;display:flex;gap:20px;">
+                <label style="cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <input type="radio" name="payType" value="prepaid" checked onchange="window.toggleCollectInput(false)"> 
+                    <span style="color:#334155;font-weight:500;">寄付</span>
+                </label>
+                <label style="cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <input type="radio" name="payType" value="collect" onchange="window.toggleCollectInput(true)"> 
+                    <span style="color:#334155;font-weight:500;">到付</span>
+                </label>
+            </div>
+            
+            <div id="collect-input-container" style="display:none;margin-bottom:24px;">
+                <label style="display:block;font-size:0.85rem;color:#475569;margin-bottom:6px;font-weight:500;">到付金额</label>
+                <div style="position:relative;">
+                    <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;">¥</span>
+                    <input type="number" id="collect-amount" style="width:100%;padding:8px 12px 8px 24px;border:1px solid #e2e8f0;border-radius:6px;outline:none;transition:border-color 0.2s;" placeholder="0.00">
+                </div>
+            </div>
+            
+            <div style="display:flex;justify-content:flex-end;gap:12px;">
+                <button class="btn" onclick="document.getElementById('recovery-confirm-modal').remove()" style="padding:8px 20px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#475569;">取消</button>
+                <button class="btn btn-primary" onclick="window.submitRecovery('${id}')" style="padding:8px 20px;border-radius:6px;background:var(--primary-color);color:#fff;border:none;">确认</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+};
+
+window.toggleCollectInput = (show) => {
+    const container = document.getElementById('collect-input-container');
+    if (show) {
+        container.style.display = 'block';
+        document.getElementById('collect-amount').focus();
+    } else {
+        container.style.display = 'none';
+    }
+};
+
+window.submitRecovery = (id) => {
+    const payType = document.querySelector('input[name="payType"]:checked').value;
+    let amount = 0;
+
+    if (payType === 'collect') {
+        const input = document.getElementById('collect-amount');
+        amount = parseFloat(input.value);
+        if (!amount || amount <= 0) {
+            alert('请输入有效的到付金额');
+            return;
+        }
+    }
+
+    // Original Logic
     const cargo = window.cargoData.find(c => c.id === id);
     if (cargo) {
         cargo.status = 'reviewed';
         cargo.statusText = '已完成';
+        // cargo.paymentType = payType; // Ensure data model supports this if needed elsewhere
 
-        // Close modal if open
+        // Remove confirm modal
+        document.getElementById('recovery-confirm-modal').remove();
+
+        // Close details modal if open
         const modalContainer = document.getElementById('modal-container');
         if (modalContainer) modalContainer.classList.add('hidden');
 
         switchView('receipt-management');
-        showToast('纸质回单已收回，订单已完结');
+        showToast(`纸质回单已收回 (${payType === 'prepaid' ? '寄付' : '到付 ¥' + amount})，订单已完结`);
     }
 };
 
