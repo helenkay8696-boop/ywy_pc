@@ -3542,7 +3542,7 @@ window.openReceiptDetailModal = (id) => {
                                         </div>
                                     </div>
                                     <div>
-                                        <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">现场照片</label>
+                                        <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">回单照片</label>
                                         <div style="width: 100%; height: 120px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; border: 1px solid #e2e8f0;">
                                             <i class="fas fa-camera" style="font-size: 2rem; color: #cbd5e1;"></i>
                                             <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.7rem; padding: 4px; text-align: center;">查看照片</div>
@@ -3558,8 +3558,7 @@ window.openReceiptDetailModal = (id) => {
                             ${cargo.status === 'received' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.approveReceipt('${cargo.id}')"><i class="fas fa-check-circle"></i> 审核</button>` : ''}
                             ${cargo.status === 'returned' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认收回</button>` : ''}
                             ${(cargo.status === 'signed' || cargo.status === 'loading') ?
-            `<button class="btn btn-primary" style="padding: 10px 24px; margin-right: 12px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-cloud-upload-alt"></i> 上传回单</button>
-             <button class="btn btn-primary" style="padding: 10px 24px; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.approveReceipt('${cargo.id}')"><i class="fas fa-check-circle"></i> 审核</button>` :
+            `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.saveReceipt('${cargo.id}')"><i class="fas fa-save"></i> 保存</button>` :
             `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-print"></i> 打印回单</button>`
         }
                         </div>
@@ -3571,6 +3570,21 @@ window.openReceiptDetailModal = (id) => {
 
 window.printReceipt = (id) => {
     showToast(`正在上传回单... (单号：${id})`);
+};
+
+window.saveReceipt = (id) => {
+    const cargo = window.cargoData.find(c => c.id === id);
+    if (cargo) {
+        cargo.status = 'returned';
+        cargo.statusText = '待评价';
+
+        // Close modal if open
+        const modalContainer = document.getElementById('modal-container');
+        if (modalContainer) modalContainer.classList.add('hidden');
+
+        switchView('receipt-management');
+        showToast('保存成功');
+    }
 };
 
 window.approveReceipt = (id) => {
