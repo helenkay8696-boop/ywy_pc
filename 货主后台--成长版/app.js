@@ -3599,6 +3599,7 @@ window.confirmPaperReceipt = (id) => {
         <div class="modal-content" style="background:#fff;border-radius:12px;width:400px;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);">
             <h3 style="font-weight:700;margin-bottom:12px;font-size:1.1rem;color:#1e293b;">确认收回</h3>
             <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px;line-height:1.5;">确认收回后将自动请款，请选择纸质回单付款类型</p>
+            <p style="color:#ef4444;font-size:0.9rem;margin-bottom:20px;font-weight:500;">此运单包含油卡，请注意收回。</p>
             
             <div style="margin-bottom:20px;">
                 <label style="display:block;font-size:0.85rem;color:#475569;margin-bottom:6px;font-weight:500;">快递单号</label>
