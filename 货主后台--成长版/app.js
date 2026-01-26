@@ -3517,11 +3517,11 @@ window.openReceiptDetailModal = (id) => {
                             </div>
                         </div>
 
-                        <!-- 4. 附加信息层 -->
+                        <!-- 4. 回单信息 -->
                         <div style="background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">
                                 <i class="fas fa-paperclip" style="color: var(--primary-color);"></i>
-                                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">附加信息层</h3>
+                                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">回单信息</h3>
                             </div>
 
                             ${cargo.courierNumber ? `
@@ -3529,23 +3529,6 @@ window.openReceiptDetailModal = (id) => {
                                 <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">快递单号</label>
                                 <span style="font-weight: 600;">${cargo.courierNumber}</span>
                             </div>` : ''}
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">电子签名</label>
-                                    <div style="width: 100%; height: 120px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 1px solid #e2e8f0;">
-                                            <i class="fas fa-pen-nib" style="font-size: 2rem; color: #cbd5e1;"></i>
-                                            <span style="position: absolute; bottom: 8px; font-size: 0.7rem; color: #94a3b8;">电子签名已加密存证</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">地理位置</label>
-                                        <div style="width: 100%; height: 120px; background: #e0f2fe; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; padding: 12px; border: 1px solid #bae6fd;">
-                                            <div style="text-align: center;">
-                                                <i class="fas fa-location-dot" style="font-size: 1.5rem; color: #0284c7; margin-bottom: 8px;"></i>
-                                                <p style="font-size: 0.75rem; color: #0369a1; margin: 0;">广东省深圳市南山区<br>软件产业基地 2栋</p>
-                                            </div>
-                                        </div>
-                                    </div>
                                     <div>
                                         <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">回单照片</label>
                                         <div style="width: 100%; height: 120px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; border: 1px solid #e2e8f0;">
@@ -3553,7 +3536,6 @@ window.openReceiptDetailModal = (id) => {
                                             <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.7rem; padding: 4px; text-align: center;">查看照片</div>
                                         </div>
                                     </div>
-                                </div>
                             </div>
                         </div>
 
