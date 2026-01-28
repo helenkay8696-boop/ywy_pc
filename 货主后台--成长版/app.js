@@ -3387,8 +3387,12 @@ window.openReceiptDetailModal = (id) => {
     const cargo = window.cargoData.find(c => c.id === id) || window.cargoData[0];
     const modalContainer = document.getElementById('modal-container');
 
+    // Allow scrolling for tall modal
+    modalContainer.style.alignItems = 'flex-start';
+    modalContainer.style.overflowY = 'auto';
+
     modalContainer.innerHTML = `
-                <div class="modal-content" style="width: 900px; max-width: 95vw; background: #fff; border-radius: 16px; padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: 90vh;">
+                <div class="modal-content" style="width: 900px; max-width: 95vw; background: #fff; border-radius: 16px; padding: 0; display: flex; flex-direction: column; margin: 40px auto;">
                     <!-- Modal Header -->
                     <div style="padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #fff; position: sticky; top: 0; z-index: 10;">
                         <div>
@@ -3402,7 +3406,29 @@ window.openReceiptDetailModal = (id) => {
                     </div>
 
                     <!-- Modal Body (Scrollable) -->
-                    <div style="padding: 24px; overflow-y: auto; flex: 1; background: #f8fafc;">
+                    <div style="padding: 24px; flex: 1; background: #f8fafc;">
+                        <!-- 4. 回单信息 -->
+                        <div style="background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">
+                                <i class="fas fa-paperclip" style="color: var(--primary-color);"></i>
+                                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">回单信息</h3>
+                            </div>
+
+                            ${cargo.courierNumber ? `
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">快递单号</label>
+                                <span style="font-weight: 600;">${cargo.courierNumber}</span>
+                            </div>` : ''}
+                                    <div>
+                                        <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">回单照片</label>
+                                        <div style="width: 100%; height: 120px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; border: 1px solid #e2e8f0;">
+                                            <i class="fas fa-camera" style="font-size: 2rem; color: #cbd5e1;"></i>
+                                            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.7rem; padding: 4px; text-align: center;">查看照片</div>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+
                         <!-- 1. 基础信息层 -->
                         <div style="background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">
@@ -3517,35 +3543,15 @@ window.openReceiptDetailModal = (id) => {
                             </div>
                         </div>
 
-                        <!-- 4. 回单信息 -->
-                        <div style="background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">
-                                <i class="fas fa-paperclip" style="color: var(--primary-color);"></i>
-                                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">回单信息</h3>
-                            </div>
 
-                            ${cargo.courierNumber ? `
-                            <div style="margin-bottom: 16px;">
-                                <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">快递单号</label>
-                                <span style="font-weight: 600;">${cargo.courierNumber}</span>
-                            </div>` : ''}
-                                    <div>
-                                        <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">回单照片</label>
-                                        <div style="width: 100%; height: 120px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; border: 1px solid #e2e8f0;">
-                                            <i class="fas fa-camera" style="font-size: 2rem; color: #cbd5e1;"></i>
-                                            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.7rem; padding: 4px; text-align: center;">查看照片</div>
-                                        </div>
-                                    </div>
-                            </div>
-                        </div>
 
                         <!-- Modal Footer -->
                         <div style="padding: 16px 24px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 12px; background: #fff;">
                             <button class="btn" style="padding: 10px 24px; border: 1px solid #e2e8f0;" onclick="document.getElementById('modal-container').classList.add('hidden')">关闭窗口</button>
                             ${cargo.status === 'received' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #f59e0b; border-color: #f59e0b;" onclick="window.approveReceipt('${cargo.id}')"><i class="fas fa-check-circle"></i> 审核</button>` : ''}
-                            ${cargo.status === 'returned' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认收回</button>` : ''}
+                            ${cargo.status === 'returned' ? `<button class="btn btn-primary" style="padding: 10px 24px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认签收</button>` : ''}
                             ${(cargo.status === 'signed' || cargo.status === 'loading') ?
-            `<button class="btn btn-primary" style="padding: 10px 24px; margin-right: 12px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认收回</button>
+            `<button class="btn btn-primary" style="padding: 10px 24px; margin-right: 12px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认签收</button>
              <button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.saveReceipt('${cargo.id}')"><i class="fas fa-save"></i> 保存</button>` :
             `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-print"></i> 打印回单</button>`
         }
@@ -3597,8 +3603,8 @@ window.confirmPaperReceipt = (id) => {
     overlay.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:2000;display:flex;justify-content:center;align-items:center;';
     overlay.innerHTML = `
         <div class="modal-content" style="background:#fff;border-radius:12px;width:400px;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);">
-            <h3 style="font-weight:700;margin-bottom:12px;font-size:1.1rem;color:#1e293b;">确认收回</h3>
-            <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px;line-height:1.5;">确认收回后将自动请款，请选择纸质回单付款类型</p>
+            <h3 style="font-weight:700;margin-bottom:12px;font-size:1.1rem;color:#1e293b;">确认签收</h3>
+            <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px;line-height:1.5;">确认签收后将自动请款，请选择纸质回单付款类型</p>
             <p style="color:#ef4444;font-size:0.9rem;margin-bottom:20px;font-weight:500;">此运单包含油卡，请注意收回。</p>
             
             <div style="margin-bottom:20px;">
