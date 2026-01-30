@@ -3420,11 +3420,66 @@ window.openReceiptDetailModal = (id) => {
                                 <span style="font-weight: 600;">${cargo.courierNumber}</span>
                             </div>` : ''}
                                     <div>
-                                        <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">回单照片</label>
-                                        <div style="width: 100%; height: 120px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; border: 1px solid #e2e8f0;">
-                                            <i class="fas fa-camera" style="font-size: 2rem; color: #cbd5e1;"></i>
-                                            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.7rem; padding: 4px; text-align: center;">查看照片</div>
+                                        ${(cargo.status === 'signed' || cargo.status === 'loading') ? `
+                                        <!-- 待上传状态：显示上传区域 -->
+                                        <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">回单附件 <span style="color: #94a3b8; font-weight: normal;">(支持 JPG/PNG、Excel、PDF)</span></label>
+                                        
+                                        <!-- 文件上传区域 -->
+                                        <div id="receipt-upload-zone-${cargo.id}" 
+                                             onclick="document.getElementById('receipt-file-input-${cargo.id}').click()"
+                                             ondragover="event.preventDefault(); this.style.borderColor='var(--primary-color)'; this.style.background='#f0f4ff';"
+                                             ondragleave="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc';"
+                                             ondrop="event.preventDefault(); this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'; window.handleReceiptFileDrop(event, '${cargo.id}');"
+                                             style="width: 100%; min-height: 100px; background: #f8fafc; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 2px dashed #e2e8f0; transition: all 0.3s ease; padding: 20px;">
+                                            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #94a3b8; margin-bottom: 8px;"></i>
+                                            <p style="font-size: 0.85rem; color: #64748b; margin: 0;">点击或拖拽文件到此处上传</p>
+                                            <p style="font-size: 0.75rem; color: #94a3b8; margin: 4px 0 0 0;">支持 JPG、PNG、Excel、PDF 格式</p>
                                         </div>
+                                        <input type="file" id="receipt-file-input-${cargo.id}" 
+                                               accept=".jpg,.jpeg,.png,.xls,.xlsx,.pdf" 
+                                               multiple 
+                                               style="display: none;" 
+                                               onchange="window.handleReceiptFileSelect(event, '${cargo.id}')" />
+                                        
+                                        <!-- 已上传文件列表 -->
+                                        <div id="receipt-file-list-${cargo.id}" style="margin-top: 12px;"></div>
+                                        ` : `
+                                        <!-- 待签收/已签收状态：只读显示已保存的附件 -->
+                                        <label style="display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px;">回单附件</label>
+                                        ${cargo.receiptFiles && cargo.receiptFiles.length > 0 ? `
+                                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                                            ${cargo.receiptFiles.map(file => {
+        const ext = file.name.split('.').pop().toLowerCase();
+        let iconInfo = { icon: 'fa-file', color: '#64748b' };
+        if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) {
+            iconInfo = { icon: 'fa-file-image', color: '#10b981' };
+        } else if (['xls', 'xlsx'].includes(ext)) {
+            iconInfo = { icon: 'fa-file-excel', color: '#059669' };
+        } else if (ext === 'pdf') {
+            iconInfo = { icon: 'fa-file-pdf', color: '#ef4444' };
+        }
+        const fileSize = file.size ? (file.size < 1024 ? file.size + ' B' : (file.size < 1048576 ? (file.size / 1024).toFixed(2) + ' KB' : (file.size / 1048576).toFixed(2) + ' MB')) : '';
+        return `
+                                                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                                    <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                                                        <i class="fas ${iconInfo.icon}" style="font-size: 1.25rem; color: ${iconInfo.color};"></i>
+                                                        <div style="flex: 1; min-width: 0;">
+                                                            <div style="font-size: 0.85rem; font-weight: 500; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${file.name}">${file.name}</div>
+                                                            <div style="font-size: 0.75rem; color: #94a3b8;">${fileSize}</div>
+                                                        </div>
+                                                    </div>
+                                                    <span style="font-size: 0.7rem; color: #10b981; background: #dcfce7; padding: 2px 8px; border-radius: 4px;">已上传</span>
+                                                </div>
+                                                `;
+    }).join('')}
+                                        </div>
+                                        ` : `
+                                        <div style="padding: 20px; background: #f8fafc; border-radius: 8px; text-align: center; color: #94a3b8; border: 1px solid #e2e8f0;">
+                                            <i class="fas fa-folder-open" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
+                                            <p style="margin: 0; font-size: 0.85rem;">暂无附件</p>
+                                        </div>
+                                        `}
+                                        `}
                                     </div>
                             </div>
                         </div>
@@ -3562,6 +3617,154 @@ window.openReceiptDetailModal = (id) => {
     modalContainer.style.display = 'flex';
 };
 
+// --- 回单文件上传处理 ---
+
+// 存储已上传的文件
+window.receiptUploadedFiles = {};
+
+// 获取文件图标
+window.getFileIcon = (fileName) => {
+    const ext = fileName.split('.').pop().toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) {
+        return { icon: 'fa-file-image', color: '#10b981' };
+    } else if (['xls', 'xlsx'].includes(ext)) {
+        return { icon: 'fa-file-excel', color: '#059669' };
+    } else if (ext === 'pdf') {
+        return { icon: 'fa-file-pdf', color: '#ef4444' };
+    }
+    return { icon: 'fa-file', color: '#64748b' };
+};
+
+// 格式化文件大小
+window.formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+// 验证文件类型
+window.validateReceiptFile = (file) => {
+    const allowedTypes = [
+        'image/jpeg', 'image/jpg', 'image/png',
+        'application/pdf',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'xls', 'xlsx'];
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    return allowedTypes.includes(file.type) || allowedExtensions.includes(ext);
+};
+
+// 处理文件选择
+window.handleReceiptFileSelect = (event, cargoId) => {
+    const files = event.target.files;
+    if (files.length > 0) {
+        window.processReceiptFiles(Array.from(files), cargoId);
+    }
+};
+
+// 处理文件拖放
+window.handleReceiptFileDrop = (event, cargoId) => {
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+        window.processReceiptFiles(Array.from(files), cargoId);
+    }
+};
+
+// 处理文件
+window.processReceiptFiles = (files, cargoId) => {
+    if (!window.receiptUploadedFiles[cargoId]) {
+        window.receiptUploadedFiles[cargoId] = [];
+    }
+
+    let validCount = 0;
+    let invalidCount = 0;
+
+    files.forEach(file => {
+        if (window.validateReceiptFile(file)) {
+            // 检查是否已存在同名文件
+            const exists = window.receiptUploadedFiles[cargoId].some(f => f.name === file.name);
+            if (!exists) {
+                window.receiptUploadedFiles[cargoId].push({
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    file: file,
+                    uploadTime: new Date().toLocaleString()
+                });
+                validCount++;
+            }
+        } else {
+            invalidCount++;
+        }
+    });
+
+    // 更新文件列表显示
+    window.renderReceiptFileList(cargoId);
+
+    // 显示上传结果
+    if (validCount > 0) {
+        showToast(`成功添加 ${validCount} 个文件`);
+    }
+    if (invalidCount > 0) {
+        showToast(`${invalidCount} 个文件格式不支持，已跳过`);
+    }
+};
+
+// 渲染文件列表
+window.renderReceiptFileList = (cargoId) => {
+    const listContainer = document.getElementById(`receipt-file-list-${cargoId}`);
+    const files = window.receiptUploadedFiles[cargoId] || [];
+
+    if (files.length === 0) {
+        listContainer.innerHTML = '';
+        return;
+    }
+
+    listContainer.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${files.map((file, index) => {
+        const iconInfo = window.getFileIcon(file.name);
+        return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; transition: all 0.2s;" 
+                         onmouseover="this.style.borderColor='var(--primary-color)'; this.style.background='#f8fafc';"
+                         onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='#fff';">
+                        <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                            <i class="fas ${iconInfo.icon}" style="font-size: 1.25rem; color: ${iconInfo.color};"></i>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-size: 0.85rem; font-weight: 500; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${file.name}">${file.name}</div>
+                                <div style="font-size: 0.75rem; color: #94a3b8;">${window.formatFileSize(file.size)}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 0.7rem; color: #10b981; background: #dcfce7; padding: 2px 8px; border-radius: 4px;">已添加</span>
+                            <button onclick="event.stopPropagation(); window.removeReceiptFile('${cargoId}', ${index})" 
+                                    style="background: none; border: none; cursor: pointer; padding: 4px; color: #94a3b8; transition: color 0.2s;"
+                                    onmouseover="this.style.color='#ef4444'"
+                                    onmouseout="this.style.color='#94a3b8'">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+    }).join('')}
+        </div>
+    `;
+};
+
+// 删除文件
+window.removeReceiptFile = (cargoId, index) => {
+    if (window.receiptUploadedFiles[cargoId]) {
+        const fileName = window.receiptUploadedFiles[cargoId][index].name;
+        window.receiptUploadedFiles[cargoId].splice(index, 1);
+        window.renderReceiptFileList(cargoId);
+        showToast(`已移除文件: ${fileName}`);
+    }
+};
+
 window.printReceipt = (id) => {
     showToast(`正在上传回单... (单号：${id})`);
 };
@@ -3569,15 +3772,39 @@ window.printReceipt = (id) => {
 window.saveReceipt = (id) => {
     const cargo = window.cargoData.find(c => c.id === id);
     if (cargo) {
+        // 检查是否上传了附件
+        const uploadedFiles = window.receiptUploadedFiles[id] || [];
+        if (uploadedFiles.length === 0) {
+            showToast('请先上传回单附件（支持 JPG、Excel、PDF 格式）');
+            // 高亮上传区域提示用户
+            const uploadZone = document.getElementById(`receipt-upload-zone-${id}`);
+            if (uploadZone) {
+                uploadZone.style.borderColor = '#ef4444';
+                uploadZone.style.background = '#fef2f2';
+                setTimeout(() => {
+                    uploadZone.style.borderColor = '#e2e8f0';
+                    uploadZone.style.background = '#f8fafc';
+                }, 2000);
+            }
+            return;
+        }
+
         cargo.status = 'returned';
         cargo.statusText = '待评价';
+        // 保存附件信息到货物数据
+        cargo.receiptFiles = uploadedFiles.map(f => ({
+            name: f.name,
+            size: f.size,
+            type: f.type,
+            uploadTime: f.uploadTime
+        }));
 
         // Close modal if open
         const modalContainer = document.getElementById('modal-container');
         if (modalContainer) modalContainer.classList.add('hidden');
 
         switchView('receipt-management');
-        showToast('保存成功');
+        showToast(`保存成功，已上传 ${uploadedFiles.length} 个附件`);
     }
 };
 
@@ -3597,6 +3824,31 @@ window.approveReceipt = (id) => {
 };
 
 window.confirmPaperReceipt = (id) => {
+    // 获取货物信息
+    const cargo = window.cargoData.find(c => c.id === id);
+
+    // 仅在"待上传"状态（signed/loading）时验证附件
+    // "待签收"状态（returned）不需要验证附件
+    const needFileValidation = cargo && (cargo.status === 'signed' || cargo.status === 'loading');
+
+    if (needFileValidation) {
+        const uploadedFiles = window.receiptUploadedFiles[id] || [];
+        if (uploadedFiles.length === 0) {
+            showToast('请先上传回单附件（支持 JPG、Excel、PDF 格式）');
+            // 高亮上传区域提示用户
+            const uploadZone = document.getElementById(`receipt-upload-zone-${id}`);
+            if (uploadZone) {
+                uploadZone.style.borderColor = '#ef4444';
+                uploadZone.style.background = '#fef2f2';
+                setTimeout(() => {
+                    uploadZone.style.borderColor = '#e2e8f0';
+                    uploadZone.style.background = '#f8fafc';
+                }, 2000);
+            }
+            return;
+        }
+    }
+
     // Open the secondary confirmation modal
     const overlay = document.createElement('div');
     overlay.id = 'recovery-confirm-modal';
