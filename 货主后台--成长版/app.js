@@ -3608,7 +3608,7 @@ window.openReceiptDetailModal = (id) => {
                             ${(cargo.status === 'signed' || cargo.status === 'loading') ?
             `<button class="btn btn-primary" style="padding: 10px 24px; margin-right: 12px; background-color: #10b981; border-color: #10b981;" onclick="window.confirmPaperReceipt('${cargo.id}')"><i class="fas fa-check-double"></i> 确认签收</button>
              <button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.saveReceipt('${cargo.id}')"><i class="fas fa-save"></i> 保存</button>` :
-            `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-print"></i> 打印回单</button>`
+            (cargo.status !== 'returned' ? `<button class="btn btn-primary" style="padding: 10px 24px;" onclick="window.printReceipt('${cargo.id}')"><i class="fas fa-print"></i> 打印回单</button>` : '')
         }
                         </div>
                     </div>
