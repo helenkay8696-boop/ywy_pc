@@ -2763,8 +2763,61 @@ const renderMessages = (container) => {
                 <span style="font-weight: 500;">[专属推荐] 发现有3台匹配您线路的回程车，点击查看。</span>
                 <span style="font-size:0.75rem; color:var(--text-muted)">前天</span>
             </div>
+            <div class="message-item" onclick="window.openArrivalPaymentApprovalModal()" style="margin-bottom: 10px; border:1px solid #f1f5f9; color:var(--text-main); display:flex; justify-content:space-between; padding:18px; border-radius:12px; cursor: pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <span style="font-weight: 500;">[到货款审批] 您提交的到货款审批申请已有新动态，点击查看详情。</span>
+                <span style="font-size:0.75rem; color:var(--text-muted)">刚刚</span>
+            </div>
         </div>
     `;
+};
+
+window.openArrivalPaymentApprovalModal = () => {
+    const modalHtml = `
+        <div class="modal-overlay" id="payment-approval-modal">
+            <div class="card" style="width: 450px; border-radius: 16px; overflow: hidden; padding: 0; box-shadow: var(--shadow-lg);">
+                <div class="card-header" style="padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #fafafa;">
+                    <h3 style="margin: 0; font-weight: 700; color: #1e293b; font-size: 1.1rem;">到货款审批</h3>
+                    <button class="btn-text" onclick="document.getElementById('payment-approval-modal').remove()" style="font-size: 1.5rem; color: #94a3b8;">&times;</button>
+                </div>
+                <div style="padding: 24px;">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569; font-size: 0.9rem;">付款方式</label>
+                        <select id="pay-method" class="form-input" style="width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 12px;">
+                            <option value="银行卡">银行卡</option>
+                            <option value="油卡">油卡</option>
+                            <option value="网货平台">网货平台</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 28px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569; font-size: 0.9rem;">付款金额 (元)</label>
+                        <input type="number" id="pay-amount" class="form-input" placeholder="请输入付款金额" style="width: 100%; height: 42px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 12px;">
+                    </div>
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button class="btn" style="background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 10px 24px; font-weight: 600;" onclick="window.processApproval('reject')">拒绝</button>
+                        <button class="btn btn-primary" style="background: #4f46e5; color: white; padding: 10px 24px; font-weight: 600;" onclick="window.processApproval('confirm')">确认</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+};
+
+window.processApproval = (type) => {
+    const amount = document.getElementById('pay-amount').value;
+    const method = document.getElementById('pay-method').value;
+
+    if (type === 'confirm') {
+        if (!amount) {
+            showToast('请输入付款金额');
+            return;
+        }
+        showToast(`已确认付款：${method}，金额：${amount}元`);
+    } else {
+        showToast('已拒绝该笔到货款审批');
+    }
+
+    document.getElementById('payment-approval-modal').remove();
 };
 
 // --- Operational Modals ---
