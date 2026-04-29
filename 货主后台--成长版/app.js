@@ -3298,6 +3298,11 @@ const renderReceiptManagement = (container) => {
                         <div class="stat-value">12 <span class="trend-badge trend-up">跟进中</span></div>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-icon" style="background: #e0f2fe; color: #0369a1;"><i class="fas fa-file-invoice"></i></div>
+                        <div class="stat-label">待审核</div>
+                        <div class="stat-value">8 <span class="trend-badge trend-up">待核对</span></div>
+                    </div>
+                    <div class="stat-card">
                         <div class="stat-icon" style="background: #eff6ff; color: #1e40af;"><i class="fas fa-box-open"></i></div>
                         <div class="stat-label">待签收</div>
                         <div class="stat-value">5 <span class="trend-badge trend-up">运输中</span></div>
@@ -3307,29 +3312,33 @@ const renderReceiptManagement = (container) => {
                         <div class="stat-label">已签收</div>
                         <div class="stat-value">28</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: #f1f5f9; color: #64748b;"><i class="fas fa-history"></i></div>
-                        <div class="stat-label">月度合规率</div>
-                        <div class="stat-value">99.4%</div>
-                    </div>
                 </div>
 
                 <div class="card">
                     <!-- New Search Filters -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 16px; border-bottom: 1px solid #f1f5f9; background: #fff;">
-                        <input type="text" placeholder="运单号" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
-                        <input type="text" placeholder="配载单号" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
-                        <input type="text" placeholder="客户名称" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
-                        <input type="date" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                    <div style="padding: 16px; border-bottom: 1px solid #f1f5f9; background: #fff;">
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px;">
+                            <input type="text" placeholder="运单号" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                            <input type="text" placeholder="配载单号" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                            <input type="text" placeholder="客户单号" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                            <input type="text" placeholder="承运商单号" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+                            <input type="text" id="receipt-search" placeholder="客户名称" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                            <input type="date" style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px; width: 100%;">
+                        </div>
                     </div>
 
                     <div class="filter-tab-container" style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px;">
                         <div style="display: flex; gap: 20px;">
                             <div class="filter-tab active" data-filter="all">全部</div>
                             <div class="filter-tab" data-filter="pending-upload">待上传</div>
-
-                            <div class="filter-tab" data-filter="pending-p">待签收</div>
+                            <div class="filter-tab" data-filter="pending-review">待审核</div>
+                            <div class="filter-tab" data-filter="pending-sign">待签收</div>
                             <div class="filter-tab" data-filter="completed">已签收</div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-primary" style="background: #fff; color: var(--primary-color); border: 1px solid var(--primary-color);" onclick="window.batchPrintReceipts()"><i class="fas fa-print"></i> 批量打印回单</button>
                         </div>
                         </div>
                     </div>
@@ -3337,13 +3346,17 @@ const renderReceiptManagement = (container) => {
                     <table class="data-table">
                         <thead>
                             <tr>
+                                <th style="width: 40px; text-align: center;"><input type="checkbox" id="receipt-select-all" onclick="window.toggleAllReceipts(this)"></th>
                                 <th style="width: 140px;">运单号</th>
+                                <th style="width: 120px;">配载单号</th>
+                                <th style="width: 120px;">客户单号</th>
+                                <th style="width: 120px;">承运商单号</th>
                                 <th>装货地 / 卸货地</th>
                                 <th>客户 / 货物信息</th>
-                                <th>电子回单</th>
-                                <th>纸质回单</th>
+                                <th style="width: 100px;">电子回单</th>
+                                <th style="width: 100px;">纸质回单</th>
                                 <th style="width: 100px;">审核状态</th>
-                                <th style="width: 150px;">操作</th>
+                                <th style="width: 80px;">操作</th>
                             </tr>
                         </thead>
                         <tbody id="receipt-table-body">
@@ -3365,9 +3378,9 @@ const renderReceiptManagement = (container) => {
         // Apply Tab Filter
         if (currentFilter === 'pending-upload') {
             filtered = filtered.filter(item => item.status === 'signed' || item.status === 'loading');
-        } else if (currentFilter === 'pending-e') {
+        } else if (currentFilter === 'pending-review') {
             filtered = filtered.filter(item => item.status === 'received');
-        } else if (currentFilter === 'pending-p') {
+        } else if (currentFilter === 'pending-sign') {
             filtered = filtered.filter(item => item.status === 'returned');
         } else if (currentFilter === 'completed') {
             filtered = filtered.filter(item => item.status === 'reviewed' || item.status === 'settled');
@@ -3404,10 +3417,19 @@ const renderReceiptRows = (data) => {
         // Only show '寄送中' if electronic receipt is uploaded (i.e. process has started)
         const pStatus = item.status === 'reviewed' ? '已收回' : (eStatus === '已上传' ? '寄送中' : '');
         const pBadge = pStatus === '已收回' ? 'status-active' : (pStatus ? 'status-pending' : '');
+        
+        // Generate mock data for new columns
+        const peizaiSn = 'PZ' + item.id.split('').reverse().join('').slice(0, 8);
+        const clientSn = 'KH' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+        const carrierSn = 'CY' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
 
         return `
                 <tr>
+                    <td style="text-align: center;"><input type="checkbox" class="receipt-item-checkbox" value="${item.id}"></td>
                     <td><b style="color:var(--primary-color)">${item.id}</b></td>
+                    <td style="font-size: 0.85rem; color: #64748b;">${peizaiSn}</td>
+                    <td style="font-size: 0.85rem; color: #64748b;">${clientSn}</td>
+                    <td style="font-size: 0.85rem; color: #64748b;">${carrierSn}</td>
                     <td><div style="font-weight:600">${item.route}</div></td>
                     <td>
                         <div style="font-weight:600">${item.client}</div>
@@ -5223,4 +5245,19 @@ window.renderConsignorRecharge = (container) => {
             alert('提现申请已提交，资金将原路返回您的账户。');
         }, 1200);
     };
+};
+
+// --- Receipt Management Helpers ---
+window.toggleAllReceipts = (master) => {
+    const checkboxes = document.querySelectorAll('.receipt-item-checkbox');
+    checkboxes.forEach(cb => cb.checked = master.checked);
+};
+
+window.batchPrintReceipts = () => {
+    const selected = Array.from(document.querySelectorAll('.receipt-item-checkbox:checked')).map(cb => cb.value);
+    if (selected.length === 0) {
+        showToast?.('请先选择要打印的回单', 'warning') || alert('请先选择要打印的回单');
+        return;
+    }
+    showToast?.(`正在打印选中的 ${selected.length} 份回单...`, 'success') || alert(`正在打印选中的 ${selected.length} 份回单...`);
 };
